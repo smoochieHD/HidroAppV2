@@ -1,0 +1,233 @@
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../models/fasting_session.dart';
+import '../models/fasting_profile.dart';
+
+/// Camada única responsável por guardar e ler todos os dados da app
+/// localmente no telemóvel. Nenhum dado é enviado para qualquer servidor.
+class StorageService {
+  static const _keyActiveSession = 'active_fasting_session';
+  static const _keySessionHistory = 'fasting_session_history';
+  static const _keyWaterGoal = 'water_goal_ml';
+  static const _keyDefaultProtocolHours = 'default_protocol_hours';
+  static const _keyLastFinishedProtocolMinutes =
+      'last_finished_protocol_minutes';
+  static const _keyEatingWindowMinutes = 'eating_window_minutes';
+  static const _keySelectedTheme = 'selected_theme';
+  static const _keySelectedPalette = 'selected_palette';
+  static const _keyIsPremium = 'is_premium';
+  static const _keyOnboardingDone = 'onboarding_done';
+  static const _keyScheduledNextFastTime = 'scheduled_next_fast_time';
+  static const _keyScheduledNextFastHours = 'scheduled_next_fast_hours';
+  static const _keyPendingWaterMl = 'pending_water_ml';
+  static const _keyAutoScheduleNextCycle = 'auto_schedule_next_cycle';
+  static const _keyFastingProfiles = 'fasting_profiles';
+  static const _keyActiveProfileId = 'active_profile_id';
+  static const _keyWeeklyReportEnabled = 'weekly_report_enabled';
+  static const _keyWaterRemindersEnabled = 'water_reminders_enabled';
+
+  final SharedPreferences _prefs;
+
+  StorageService(this._prefs);
+
+  static Future<StorageService> create() async {
+    final prefs = await SharedPreferences.getInstance();
+    return StorageService(prefs);
+  }
+
+  // ---- Água pendente (sem jejum ativo no momento) ----
+
+  /// Água acumulada fora de qualquer jejum ativo. É absorvida pelo
+  /// próximo jejum que começar (ver AppState.startFasting), para que o
+  /// utilizador não perca o registo de água bebida nesse intervalo.
+  Future<void> savePendingWater(int ml) async {
+    await _prefs.setInt(_keyPendingWaterMl, ml);
+  }
+
+  int loadPendingWater() => _prefs.getInt(_keyPendingWaterMl) ?? 0;
+
+  Future<void> clearPendingWater() async {
+    await _prefs.remove(_keyPendingWaterMl);
+  }
+
+  /// Liga/desliga o agendamento automático do próximo ciclo de jejum ao
+  /// terminar o atual. Por defeito desligado — o utilizador tem de optar
+  /// explicitamente por este comportamento.
+  Future<void> saveAutoScheduleNextCycle(bool value) async {
+    await _prefs.setBool(_keyAutoScheduleNextCycle, value);
+  }
+
+  bool loadAutoScheduleNextCycle() =>
+      _prefs.getBool(_keyAutoScheduleNextCycle) ?? false;
+
+  // ---- Próximo jejum agendado (janela de alimentação em curso) ----
+
+  /// Guarda a hora em que o próximo jejum deve começar automaticamente,
+  /// junto com o protocolo (horas) a usar nesse jejum. `null` para limpar.
+  Future<void> saveScheduledNextFast(DateTime? time, int? minutes) async {
+    if (time == null) {
+      await _prefs.remove(_keyScheduledNextFastTime);
+      await _prefs.remove(_keyScheduledNextFastHours);
+      return;
+    }
+    await _prefs.setString(_keyScheduledNextFastTime, time.toIso8601String());
+    await _prefs.setInt(_keyScheduledNextFastHours, minutes ?? 16 * 60);
+  }
+
+  DateTime? loadScheduledNextFastTime() {
+    final raw = _prefs.getString(_keyScheduledNextFastTime);
+    if (raw == null) return null;
+    return DateTime.tryParse(raw);
+  }
+
+  int loadScheduledNextFastMinutes() =>
+      _prefs.getInt(_keyScheduledNextFastHours) ?? 16 * 60;
+
+  // ---- Sessão de jejum ativa ----
+
+  Future<void> saveActiveSession(FastingSession? session) async {
+    if (session == null) {
+      await _prefs.remove(_keyActiveSession);
+      return;
+    }
+    await _prefs.setString(_keyActiveSession, jsonEncode(session.toJson()));
+  }
+
+  FastingSession? loadActiveSession() {
+    final raw = _prefs.getString(_keyActiveSession);
+    if (raw == null) return null;
+    try {
+      return FastingSession.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+    } catch (_) {
+      // Dados corrompidos não devem impedir a app de arrancar.
+      return null;
+    }
+  }
+
+  // ---- Histórico de jejuns terminados ----
+
+  Future<void> appendToHistory(FastingSession session) async {
+    final history = loadHistory();
+    history.add(session);
+    final encoded = history.map((s) => s.toJson()).toList();
+    await _prefs.setString(_keySessionHistory, jsonEncode(encoded));
+  }
+
+  List<FastingSession> loadHistory() {
+    final raw = _prefs.getString(_keySessionHistory);
+    if (raw == null) return [];
+    try {
+      final list = jsonDecode(raw) as List<dynamic>;
+      return list
+          .map((e) => FastingSession.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  // ---- Definições gerais ----
+
+  Future<void> saveWaterGoal(int ml) async {
+    await _prefs.setInt(_keyWaterGoal, ml);
+  }
+
+  int loadWaterGoal() => _prefs.getInt(_keyWaterGoal) ?? 2000;
+
+  Future<void> saveDefaultProtocolMinutes(int minutes) async {
+    await _prefs.setInt(_keyDefaultProtocolHours, minutes);
+  }
+
+  int loadDefaultProtocolMinutes() =>
+      _prefs.getInt(_keyDefaultProtocolHours) ?? 16 * 60;
+
+  /// Guarda a duração do último jejum terminado, para o handler de
+  /// notificação saber qual protocolo usar ao agendar o próximo, mesmo
+  /// quando a sessão já foi terminada automaticamente antes de o
+  /// utilizador tocar na ação da notificação.
+  Future<void> saveLastFinishedProtocolMinutes(int minutes) async {
+    await _prefs.setInt(_keyLastFinishedProtocolMinutes, minutes);
+  }
+
+  int? loadLastFinishedProtocolMinutes() =>
+      _prefs.getInt(_keyLastFinishedProtocolMinutes);
+
+  /// Duração da janela de alimentação, definida pelo utilizador de forma
+  /// independente do tempo de jejum (ex: 6h jejum + 30min a comer, em
+  /// ciclos curtos repetidos, em vez de assumir sempre 24h - jejum).
+  Future<void> saveEatingWindowMinutes(int minutes) async {
+    await _prefs.setInt(_keyEatingWindowMinutes, minutes);
+  }
+
+  int loadEatingWindowMinutes() =>
+      _prefs.getInt(_keyEatingWindowMinutes) ?? 8 * 60;
+
+  Future<void> saveSelectedTheme(String themeId) async {
+    await _prefs.setString(_keySelectedTheme, themeId);
+  }
+
+  String loadSelectedTheme() => _prefs.getString(_keySelectedTheme) ?? 'diario';
+
+  Future<void> saveSelectedPalette(String paletteId) async {
+    await _prefs.setString(_keySelectedPalette, paletteId);
+  }
+
+  String loadSelectedPalette() =>
+      _prefs.getString(_keySelectedPalette) ?? 'blue';
+
+  Future<void> savePremiumStatus(bool isPremium) async {
+    await _prefs.setBool(_keyIsPremium, isPremium);
+  }
+
+  bool loadPremiumStatus() => _prefs.getBool(_keyIsPremium) ?? false;
+
+  Future<void> setOnboardingDone() async {
+    await _prefs.setBool(_keyOnboardingDone, true);
+  }
+
+  bool isOnboardingDone() => _prefs.getBool(_keyOnboardingDone) ?? false;
+
+  // ---- Perfis de jejum guardados ----
+
+  Future<void> saveFastingProfiles(List<FastingProfile> profiles) async {
+    final encoded = profiles.map((p) => p.toJson()).toList();
+    await _prefs.setString(_keyFastingProfiles, jsonEncode(encoded));
+  }
+
+  List<FastingProfile> loadFastingProfiles() {
+    final raw = _prefs.getString(_keyFastingProfiles);
+    if (raw == null) return [];
+    try {
+      final list = jsonDecode(raw) as List<dynamic>;
+      return list
+          .map((e) => FastingProfile.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<void> saveActiveProfileId(String? id) async {
+    if (id == null) {
+      await _prefs.remove(_keyActiveProfileId);
+      return;
+    }
+    await _prefs.setString(_keyActiveProfileId, id);
+  }
+
+  String? loadActiveProfileId() => _prefs.getString(_keyActiveProfileId);
+
+  Future<void> saveWeeklyReportEnabled(bool value) async {
+    await _prefs.setBool(_keyWeeklyReportEnabled, value);
+  }
+
+  bool loadWeeklyReportEnabled() =>
+      _prefs.getBool(_keyWeeklyReportEnabled) ?? false;
+
+  Future<void> saveWaterRemindersEnabled(bool value) async {
+    await _prefs.setBool(_keyWaterRemindersEnabled, value);
+  }
+
+  bool loadWaterRemindersEnabled() =>
+      _prefs.getBool(_keyWaterRemindersEnabled) ?? false;
+}
