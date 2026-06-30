@@ -23,7 +23,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     return AppColorsScope(
       colors: colors,
-      child: Scaffold(
+      child: Builder(builder: (context) => Scaffold(
         backgroundColor: colors.background,
         body: SafeArea(
           child: Padding(
@@ -64,7 +64,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   Widget _protocolStep(BuildContext context) {
