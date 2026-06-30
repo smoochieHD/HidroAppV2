@@ -23,7 +23,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
     return AppColorsScope(
       colors: colors,
-      child: Scaffold(
+      child: Builder(builder: (context) => Scaffold(
         backgroundColor: colors.background,
         body: SafeArea(
           child: Padding(
@@ -88,7 +88,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   Widget _benefitRow(BuildContext context, String text) {
