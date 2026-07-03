@@ -198,7 +198,7 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: colors.tealBackground,
+        color: colors.infoBackground,
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
@@ -206,7 +206,7 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
         children: [
           Text(
             isOver ? 'Meta atingida' : 'A meio do jejum',
-            style: TextStyle(fontSize: 12, color: colors.teal),
+            style: TextStyle(fontSize: 12, color: colors.info),
           ),
           const SizedBox(height: 4),
           Text(
@@ -216,13 +216,13 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: colors.teal,
+              color: colors.info,
             ),
           ),
           const SizedBox(height: 2),
           Text(
             'Janela termina às ${DateFormat.Hm().format(session.plannedEndTime)}',
-            style: TextStyle(fontSize: 12, color: colors.teal),
+            style: TextStyle(fontSize: 12, color: colors.info),
           ),
           const SizedBox(height: 14),
           SizedBox(
