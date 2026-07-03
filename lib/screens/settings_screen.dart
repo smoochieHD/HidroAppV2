@@ -257,13 +257,13 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _showProtocolPicker(BuildContext context, AppState state) {
+    final colors = AppColorsScope.of(context);
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
-        final colors = AppColorsScope.of(ctx);
         // (minutos, rótulo a mostrar). OMAD (23:1) e jejum em dias
         // alternados (36h, cobrindo um dia inteiro entre refeições) são
         // protocolos de duração — cabem na mesma estrutura dos presets
@@ -347,6 +347,7 @@ class SettingsScreen extends StatelessWidget {
   }) {
     int selectedHours = initialMinutes ~/ 60;
     int selectedMinutes = initialMinutes % 60;
+    final colors = AppColorsScope.of(context);
 
     showModalBottomSheet(
       context: context,
@@ -354,7 +355,6 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
-        final colors = AppColorsScope.of(ctx);
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -455,13 +455,13 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _showWaterGoalPicker(BuildContext context, AppState state) {
+    final colors = AppColorsScope.of(context);
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
-        final colors = AppColorsScope.of(ctx);
         final options = [1500, 2000, 2500, 3000];
         return SafeArea(
           child: Padding(
