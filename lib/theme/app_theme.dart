@@ -251,7 +251,7 @@ class AppTheme {
 }
 
 /// Identificadores dos três temas visuais do ecrã principal.
-enum HomeThemeId { diario, relogio, linhaDoTempo }
+enum HomeThemeId { diario, relogio, linhaDoTempo, chama, minimalista }
 
 extension HomeThemeIdX on HomeThemeId {
   String get id {
@@ -262,6 +262,10 @@ extension HomeThemeIdX on HomeThemeId {
         return 'relogio';
       case HomeThemeId.linhaDoTempo:
         return 'linha_do_tempo';
+      case HomeThemeId.chama:
+        return 'chama';
+      case HomeThemeId.minimalista:
+        return 'minimalista';
     }
   }
 
@@ -273,6 +277,10 @@ extension HomeThemeIdX on HomeThemeId {
         return 'Relógio';
       case HomeThemeId.linhaDoTempo:
         return 'Linha do tempo';
+      case HomeThemeId.chama:
+        return 'Chama';
+      case HomeThemeId.minimalista:
+        return 'Minimalista';
     }
   }
 
@@ -284,6 +292,10 @@ extension HomeThemeIdX on HomeThemeId {
         return HomeThemeId.relogio;
       case 'linha_do_tempo':
         return HomeThemeId.linhaDoTempo;
+      case 'chama':
+        return HomeThemeId.chama;
+      case 'minimalista':
+        return HomeThemeId.minimalista;
       default:
         return HomeThemeId.diario;
     }
