@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../models/fasting_session.dart';
 import '../services/app_state.dart';
 import '../theme/app_theme.dart';
+import '../widgets/metabolic_incentive.dart';
 import '../widgets/water_card.dart';
 
 /// Tema "Diário": feed cronológico do dia, em vez de um cronómetro.
@@ -225,7 +226,10 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
             'Janela termina às ${DateFormat.Hm().format(session.plannedEndTime)}',
             style: TextStyle(fontSize: 12, color: colors.info),
           ),
-          ..._metabolicIncentive(elapsedMinutes, colors),
+          MetabolicIncentive(
+            elapsedMinutes: elapsedMinutes,
+            colors: colors,
+          ),
           const SizedBox(height: 14),
           SizedBox(
             width: double.infinity,
@@ -237,79 +241,6 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
         ],
       ),
     );
-  }
-
-  /// Devolve um incentivo metabólico baseado nos minutos de jejum decorridos.
-  /// Vazio se ainda não tiver atingido os 12h mínimos para ser relevante.
-  List<Widget> _metabolicIncentive(int elapsedMinutes, AppColors colors) {
-    String? icon;
-    String? title;
-    String? body;
-
-    if (elapsedMinutes >= 24 * 60) {
-      // ≥ 24 horas
-      icon = '🔥';
-      title = 'Cetose activa';
-      body =
-          'O fígado está a produzir cetonas a partir da gordura armazenada — a sua principal fonte de energia agora é a gordura pura.';
-    } else if (elapsedMinutes >= 16 * 60) {
-      // ≥ 16 horas
-      icon = '⚡';
-      title = 'Lipólise em pleno';
-      body =
-          'O seu corpo está a quebrar activamente a gordura armazenada em ácidos gordos para usar como energia.';
-    } else if (elapsedMinutes >= 12 * 60) {
-      // ≥ 12 horas
-      icon = '✨';
-      title = 'Glicogénio a esgotar-se';
-      body =
-          'As reservas de glicogénio estão a diminuir e o corpo começa a transitar para a queima de gordura. Continue — está quase!';
-    } else if (elapsedMinutes >= 10 * 60) {
-      // ≥ 10 horas (aviso antecipado)
-      icon = '💡';
-      title = 'A 2 horas de queimar gordura';
-      body =
-          'Se continuar mais 2 horas, o seu corpo inicia a transição para usar a gordura como fonte de energia.';
-    }
-
-    if (icon == null) return [];
-
-    return [
-      const SizedBox(height: 14),
-      Divider(color: colors.info.withOpacity(0.25), thickness: 1),
-      const SizedBox(height: 10),
-      Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(icon, style: const TextStyle(fontSize: 18)),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title!,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: colors.info,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  body!,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: colors.info,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    ];
   }
 
   Widget _startFastingCard(BuildContext context, AppState state) {
