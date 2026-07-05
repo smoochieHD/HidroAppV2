@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../models/fasting_session.dart';
 import '../services/app_state.dart';
 import '../theme/app_theme.dart';
+import '../widgets/metabolic_incentive.dart';
 import '../widgets/water_card.dart';
 import '../widgets/today_water_row.dart';
 
@@ -118,6 +119,11 @@ class _HomeRelogioScreenState extends State<HomeRelogioScreen> {
                     child: const Text('Iniciar jejum'),
                   ),
           ),
+          if (session != null)
+            MetabolicIncentive(
+              elapsedMinutes: session.elapsed.inMinutes,
+              colors: colors,
+            ),
           const SizedBox(height: 20),
           _autoScheduleToggle(context, state),
           const SizedBox(height: 12),
