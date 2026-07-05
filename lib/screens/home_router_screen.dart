@@ -5,6 +5,8 @@ import '../theme/app_theme.dart';
 import 'home_diario_screen.dart';
 import 'home_relogio_screen.dart';
 import 'home_linha_do_tempo_screen.dart';
+import 'home_chama_screen.dart';
+import 'home_minimalista_screen.dart';
 
 /// Escolhe qual variante visual do ecrã principal mostrar,
 /// com base no tema selecionado nas definições.
@@ -19,6 +21,10 @@ class HomeRouterScreen extends StatelessWidget {
         return const HomeRelogioScreen();
       case HomeThemeId.linhaDoTempo:
         return const HomeLinhaDoTempoScreen();
+      case HomeThemeId.chama:
+        return const HomeChamaScreen();
+      case HomeThemeId.minimalista:
+        return const HomeMinimalistaScreen();
       case HomeThemeId.diario:
         return const HomeDiarioScreen();
     }
