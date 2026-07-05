@@ -380,7 +380,7 @@ class SettingsScreen extends StatelessWidget {
                         children: [
                           Expanded(
                             child: _wheelColumn(
-                              context: ctx,
+                              colors: colors,
                               label: 'horas',
                               itemCount: 24,
                               initialValue: selectedHours,
@@ -390,7 +390,7 @@ class SettingsScreen extends StatelessWidget {
                           ),
                           Expanded(
                             child: _wheelColumn(
-                              context: ctx,
+                              colors: colors,
                               label: 'min',
                               itemCount: 60,
                               initialValue: selectedMinutes,
@@ -425,13 +425,12 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _wheelColumn({
-    required BuildContext context,
+    required AppColors colors,
     required String label,
     required int itemCount,
     required int initialValue,
     required ValueChanged<int> onChanged,
   }) {
-    final colors = AppColorsScope.of(context);
     return Column(
       children: [
         Text(label,
