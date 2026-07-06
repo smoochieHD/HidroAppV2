@@ -6,11 +6,11 @@ import '../models/fasting_session.dart';
 import '../services/app_state.dart';
 import '../theme/app_theme.dart';
 import '../widgets/metabolic_incentive.dart';
-import '../widgets/water_card.dart';
 import '../widgets/today_water_row.dart';
+import '../widgets/water_card.dart';
 
-/// Tema "Minimalista": números grandes em destaque, barra de progresso com
-/// marcas de hora e dois cards de resumo rápido. Tema premium.
+/// Tema "Minimalista": fundo escuro permanente, número grande em destaque,
+/// barra de progresso com marcas de hora e cards de resumo. Tema premium.
 class HomeMinimalistaScreen extends StatefulWidget {
   const HomeMinimalistaScreen({super.key});
 
@@ -24,10 +24,9 @@ class _HomeMinimalistaScreenState extends State<HomeMinimalistaScreen> {
   @override
   void initState() {
     super.initState();
-    _ticker = Timer.periodic(const Duration(seconds: 5), (_) {
+    _ticker = Timer.periodic(const Duration(seconds: 30), (_) {
       final appState = context.read<AppState>();
       appState.checkFastCompletion();
-      appState.refreshFromStorage();
       if (mounted) setState(() {});
     });
   }
@@ -38,207 +37,220 @@ class _HomeMinimalistaScreenState extends State<HomeMinimalistaScreen> {
     super.dispose();
   }
 
+  // Paleta dark fixa — independente da paleta de cores do utilizador
+  static const _bg = Color(0xFF111111);
+  static const _card = Color(0xFF1A1A1A);
+  static const _textPrimary = Color(0xFFEEEEEE);
+  static const _textSecondary = Color(0xFF555555);
+
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
-    final colors = AppColorsScope.of(context);
+    final colors = AppColorsScope.of(context); // para cores de acento (info)
     final session = state.activeSession;
-    final progress = session?.progress ?? 0.0;
-    final elapsed = session?.elapsed.inMinutes ?? 0;
+    final lastSession = session ?? _lastSession(state);
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+    return Container(
+      color: _bg,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Cabeçalho
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(_greeting(),
+                    style: const TextStyle(
+                        fontSize: 13, color: _textSecondary)),
+                IconButton(
+                  onPressed: () => state.goToSettings(),
+                  icon: const Icon(Icons.settings_outlined,
+                      size: 20, color: _textSecondary),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Estado em texto pequeno
+            Text(
+              session != null
+                  ? (session.goalReached ? 'Meta atingida' : 'Em jejum')
+                  : 'Sem jejum activo',
+              style:
+                  const TextStyle(fontSize: 13, color: _textSecondary),
+            ),
+            const SizedBox(height: 2),
+
+            // Número grande: tempo restante
+            Text(
+              session != null ? _formatRemaining(session) : '--h --m',
+              style: const TextStyle(
+                fontSize: 52,
+                fontWeight: FontWeight.w700,
+                color: _textPrimary,
+                height: 1.0,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              session != null
+                  ? '${_formatElapsed(session)} decorridos · meta ${session.goalDuration.inHours}h'
+                  : '',
+              style:
+                  const TextStyle(fontSize: 12, color: _textSecondary),
+            ),
+            const SizedBox(height: 20),
+
+            // Barra de progresso com marcas de hora
+            if (session != null) ...[
+              _progressBar(session, colors),
+              const SizedBox(height: 16),
+
+              // Cards de resumo: água + hora de fim
+              _summaryCards(state, session, colors),
+              const SizedBox(height: 16),
+            ],
+
+            // Botão principal
+            SizedBox(
+              width: double.infinity,
+              child: session != null
+                  ? ElevatedButton(
+                      onPressed: () => state.endFasting(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.info,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Terminar jejum'),
+                    )
+                  : ElevatedButton(
+                      onPressed: () => state.startFasting(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.info,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Iniciar jejum'),
+                    ),
+            ),
+
+            // Incentivo metabólico
+            if (session != null)
+              _darkIncentive(session.elapsed.inMinutes, colors),
+
+            const SizedBox(height: 16),
+
+            // Toggle agendamento
+            _autoScheduleToggle(state, colors),
+            const SizedBox(height: 16),
+
+            // Secção Hoje
+            const Text('Hoje',
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: _textPrimary)),
+            const SizedBox(height: 10),
+
+            if (lastSession != null && session == null) ...[
+              ..._lastSessionRows(lastSession, colors),
+              const SizedBox(height: 8),
+              _waterSummaryRow(state, lastSession, colors),
+            ],
+
+            if (session != null) const TodayWaterRow(),
+
+            const SizedBox(height: 8),
+            const WaterCard(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Barra de progresso horizontal com marcas de hora
+  Widget _progressBar(FastingSession session, AppColors colors) {
+    final goalH = session.goalDuration.inHours;
+    // Calcula marcas: divide em 4 intervalos arredondados
+    final interval = ((goalH / 4).round()).clamp(1, 999);
+    final marks = <int>[];
+    for (int h = 0; h <= goalH; h += interval) {
+      marks.add(h);
+    }
+    if (marks.last != goalH) marks.add(goalH);
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: _card,
+        borderRadius: BorderRadius.circular(14),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Cabeçalho
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                _greeting(),
-                style: TextStyle(fontSize: 13, color: colors.textSecondary),
+                'Início · ${DateFormat.Hm().format(session.startTime)}',
+                style: const TextStyle(
+                    fontSize: 11, color: _textSecondary),
               ),
-              IconButton(
-                onPressed: () => context.read<AppState>().goToSettings(),
-                icon: Icon(Icons.settings_outlined,
-                    size: 20, color: colors.textSecondary),
+              Text(
+                'Termina · ${DateFormat.Hm().format(session.plannedEndTime)}',
+                style: const TextStyle(
+                    fontSize: 11, color: _textSecondary),
               ),
             ],
           ),
-          const SizedBox(height: 24),
-
-          // Estado em texto pequeno
-          Text(
-            session != null
-                ? (session.goalReached ? 'Meta atingida' : 'Em jejum')
-                : 'Sem jejum ativo',
-            style: TextStyle(fontSize: 13, color: colors.textSecondary),
-          ),
-          const SizedBox(height: 2),
-
-          // Número grande: tempo restante
-          Text(
-            session != null ? _formatRemaining(session) : '--h --m',
-            style: TextStyle(
-              fontSize: 48,
-              fontWeight: FontWeight.w700,
-              color: colors.textPrimary,
-              height: 1.0,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            session != null ? 'restante · ${_formatElapsed(session)} decorridos' : '',
-            style: TextStyle(fontSize: 12, color: colors.textSecondary),
-          ),
-          const SizedBox(height: 20),
-
-          // Barra de progresso com marcas de hora
-          if (session != null) _progressBar(session, progress, colors),
-          const SizedBox(height: 20),
-
-          // Cards de resumo rápido (apenas com sessão activa)
-          if (session != null) ...[
-            _summaryCards(context, state, session, colors),
-            const SizedBox(height: 20),
-          ],
-
-          // Botão principal
-          SizedBox(
-            width: double.infinity,
-            child: session != null
-                ? ElevatedButton(
-                    onPressed: () => state.endFasting(),
-                    child: const Text('Terminar jejum'),
-                  )
-                : ElevatedButton(
-                    onPressed: () => state.startFasting(),
-                    child: const Text('Iniciar jejum'),
-                  ),
-          ),
-
-          // Incentivo metabólico
-          if (session != null)
-            MetabolicIncentive(
-              elapsedMinutes: elapsed,
-              colors: colors,
-            ),
-
-          const SizedBox(height: 20),
-
-          // Toggle agendamento automático
-          _autoScheduleToggle(context, state),
-          const SizedBox(height: 12),
-
-          // Secção Hoje
-          Text('Hoje',
-              style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: colors.textPrimary)),
           const SizedBox(height: 10),
-          if (_lastSession(state) != null) ...[
-            ..._lastSessionRows(context, _lastSession(state)!),
-            const SizedBox(height: 8),
-          ],
-          if (session != null)
-            const TodayWaterRow()
-          else if (_lastSession(state) != null)
-            _waterSummaryRow(context, state, _lastSession(state)!),
+          // Barra
+          ClipRRect(
+            borderRadius: BorderRadius.circular(5),
+            child: LinearProgressIndicator(
+              value: session.progress.clamp(0.0, 1.0),
+              minHeight: 10,
+              backgroundColor: const Color(0xFF2A2A2A),
+              valueColor:
+                  AlwaysStoppedAnimation<Color>(colors.info),
+            ),
+          ),
           const SizedBox(height: 8),
-          const WaterCard(),
+          // Marcas de hora
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: marks
+                .map((h) => Text('${h}h',
+                    style: const TextStyle(
+                        fontSize: 10, color: _textSecondary)))
+                .toList(),
+          ),
         ],
       ),
     );
   }
 
-  /// Barra de progresso horizontal com marcas de hora visíveis
-  Widget _progressBar(
-      FastingSession session, double progress, AppColors colors) {
-    final goalHours = session.goalDuration.inHours;
-    // Marcas a mostrar: divide o total em 4 intervalos
-    final interval = (goalHours / 4).round().clamp(1, 999);
-    final marks = <int>[];
-    for (int h = 0; h <= goalHours; h += interval) {
-      marks.add(h);
-    }
-    if (marks.last != goalHours) marks.add(goalHours);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Barra
-        Container(
-          height: 10,
-          decoration: BoxDecoration(
-            color: colors.borderTertiary,
-            borderRadius: BorderRadius.circular(5),
-          ),
-          child: FractionallySizedBox(
-            alignment: Alignment.centerLeft,
-            widthFactor: progress.clamp(0.0, 1.0),
-            child: Container(
-              decoration: BoxDecoration(
-                color: colors.info,
-                borderRadius: BorderRadius.circular(5),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 6),
-        // Marcas de hora
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: marks
-              .map((h) => Text('${h}h',
-                  style:
-                      TextStyle(fontSize: 10, color: colors.textSecondary)))
-              .toList(),
-        ),
-        const SizedBox(height: 4),
-        // Legenda início / fim
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Início · ${DateFormat.Hm().format(session.startTime)}',
-              style: TextStyle(fontSize: 11, color: colors.textSecondary),
-            ),
-            Text(
-              'Termina · ${DateFormat.Hm().format(session.plannedEndTime)}',
-              style: TextStyle(fontSize: 11, color: colors.textSecondary),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  /// Dois cards de resumo rápido: água e hora de fim
-  Widget _summaryCards(BuildContext context, AppState state,
-      FastingSession session, AppColors colors) {
-    final waterMl = state.currentWaterMl;
-    final waterGoal = state.waterGoalMl;
-    final endTime = DateFormat.Hm().format(session.plannedEndTime);
-
+  /// Dois cards lado a lado: água e hora de fim
+  Widget _summaryCards(
+      AppState state, FastingSession session, AppColors colors) {
     return Row(
       children: [
         Expanded(
           child: _summaryCard(
-            colors: colors,
             icon: Icons.water_drop_outlined,
-            value: '${waterMl}ml',
-            label: 'de ${waterGoal}ml de água',
+            value: '${state.currentWaterMl}ml',
+            label: 'de ${state.waterGoalMl}ml de água',
+            colors: colors,
           ),
         ),
         const SizedBox(width: 10),
         Expanded(
           child: _summaryCard(
-            colors: colors,
             icon: Icons.flag_outlined,
-            value: endTime,
+            value: DateFormat.Hm().format(session.plannedEndTime),
             label: 'janela termina',
+            colors: colors,
           ),
         ),
       ],
@@ -246,15 +258,15 @@ class _HomeMinimalistaScreenState extends State<HomeMinimalistaScreen> {
   }
 
   Widget _summaryCard({
-    required AppColors colors,
     required IconData icon,
     required String value,
     required String label,
+    required AppColors colors,
   }) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: colors.backgroundSecondary,
+        color: _card,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -263,41 +275,53 @@ class _HomeMinimalistaScreenState extends State<HomeMinimalistaScreen> {
           Icon(icon, size: 18, color: colors.info),
           const SizedBox(height: 8),
           Text(value,
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: colors.textPrimary)),
+                  color: _textPrimary)),
           const SizedBox(height: 2),
           Text(label,
-              style:
-                  TextStyle(fontSize: 11, color: colors.textSecondary)),
+              style: const TextStyle(
+                  fontSize: 11, color: _textSecondary)),
         ],
       ),
     );
   }
 
-  Widget _autoScheduleToggle(BuildContext context, AppState state) {
-    final colors = AppColorsScope.of(context);
+  /// Incentivo metabólico em versão dark
+  Widget _darkIncentive(int elapsedMinutes, AppColors colors) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: MetabolicIncentive(
+        elapsedMinutes: elapsedMinutes,
+        colors: colors,
+      ),
+    );
+  }
+
+  Widget _autoScheduleToggle(AppState state, AppColors colors) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding:
+          const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: colors.backgroundSecondary,
+        color: _card,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         children: [
-          Expanded(
+          const Expanded(
             child: Text(
               'Agendar ciclo automaticamente',
               style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: colors.textPrimary),
+                  color: _textPrimary),
             ),
           ),
           Switch(
             value: state.autoScheduleNextCycle,
             onChanged: (v) => state.setAutoScheduleNextCycle(v),
+            activeColor: colors.info,
           ),
         ],
       ),
@@ -305,43 +329,42 @@ class _HomeMinimalistaScreenState extends State<HomeMinimalistaScreen> {
   }
 
   Widget _waterSummaryRow(
-      BuildContext context, AppState state, FastingSession session) {
-    return _infoRow(
-      context,
+      AppState state, FastingSession session, AppColors colors) {
+    return _darkRow(
       Icons.water_drop_outlined,
       '${(session.waterMl / 250).round()} copos de água (resumo)',
       '${session.waterMl}ml de ${state.waterGoalMl}ml neste ciclo',
+      colors,
     );
   }
 
-  FastingSession? _lastSession(AppState state) {
-    if (state.activeSession != null) return null;
-    final history = state.history;
-    if (history.isEmpty) return null;
-    return history.reduce(
-      (a, b) => a.startTime.isAfter(b.startTime) ? a : b,
-    );
-  }
-
-  List<Widget> _lastSessionRows(BuildContext context, FastingSession session) {
+  List<Widget> _lastSessionRows(
+      FastingSession session, AppColors colors) {
     return [
-      _infoRow(context, Icons.check_circle, 'Jejum iniciado',
-          DateFormat("HH:mm 'de' dd/MM").format(session.startTime)),
+      _darkRow(
+        Icons.check_circle,
+        'Jejum iniciado',
+        DateFormat("HH:mm 'de' dd/MM").format(session.startTime),
+        colors,
+      ),
       if (session.endTime != null) ...[
         const SizedBox(height: 8),
-        _infoRow(context, Icons.flag_outlined, 'Fim de jejum',
-            DateFormat("HH:mm 'de' dd/MM").format(session.endTime!)),
+        _darkRow(
+          Icons.flag_outlined,
+          'Fim de jejum',
+          DateFormat("HH:mm 'de' dd/MM").format(session.endTime!),
+          colors,
+        ),
       ],
     ];
   }
 
-  Widget _infoRow(
-      BuildContext context, IconData icon, String title, String subtitle) {
-    final colors = AppColorsScope.of(context);
+  Widget _darkRow(IconData icon, String title, String subtitle,
+      AppColors colors) {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: colors.backgroundSecondary,
+        color: _card,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -350,7 +373,7 @@ class _HomeMinimalistaScreenState extends State<HomeMinimalistaScreen> {
             width: 28,
             height: 28,
             decoration: BoxDecoration(
-              color: colors.infoBackground,
+              color: colors.info.withOpacity(0.15),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, size: 14, color: colors.info),
@@ -361,13 +384,13 @@ class _HomeMinimalistaScreenState extends State<HomeMinimalistaScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title,
-                    style: TextStyle(
+                    style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: colors.textPrimary)),
+                        color: _textPrimary)),
                 Text(subtitle,
-                    style:
-                        TextStyle(fontSize: 11, color: colors.textSecondary)),
+                    style: const TextStyle(
+                        fontSize: 11, color: _textSecondary)),
               ],
             ),
           ),
@@ -376,20 +399,27 @@ class _HomeMinimalistaScreenState extends State<HomeMinimalistaScreen> {
     );
   }
 
+  FastingSession? _lastSession(AppState state) {
+    final history = state.history;
+    if (history.isEmpty) return null;
+    return history.reduce(
+        (a, b) => a.startTime.isAfter(b.startTime) ? a : b);
+  }
+
   String _greeting() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) return 'Bom dia';
-    if (hour < 19) return 'Boa tarde';
+    final h = DateTime.now().hour;
+    if (h < 12) return 'Bom dia';
+    if (h < 19) return 'Boa tarde';
     return 'Boa noite';
   }
 
-  String _formatRemaining(FastingSession session) {
-    final r = session.remainingRounded;
+  String _formatRemaining(FastingSession s) {
+    final r = s.remainingRounded;
     return '${r.inHours}h ${r.inMinutes % 60}m';
   }
 
-  String _formatElapsed(FastingSession session) {
-    final e = session.elapsed;
+  String _formatElapsed(FastingSession s) {
+    final e = s.elapsed;
     return '${e.inHours}h ${e.inMinutes % 60}m';
   }
 }
