@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/fasting_session.dart';
@@ -45,15 +46,28 @@ class _HomeChamaScreenState extends State<HomeChamaScreen> {
     final session = state.activeSession;
     final lastSession = session ?? _lastSession(state);
 
-    return SingleChildScrollView(
+    // Cor do texto sobre o hero (garante contraste)
+    final heroTextColor = colors.info.computeLuminance() > 0.4
+        ? Colors.black87
+        : Colors.white;
+    final heroTextSecondary = colors.info.computeLuminance() > 0.4
+        ? Colors.black54
+        : Colors.white70;
+
+    // Forçar status bar icons a contraste correcto sobre o hero
+    final brightness = colors.info.computeLuminance() > 0.4
+        ? Brightness.dark
+        : Brightness.light;
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle(statusBarIconBrightness: brightness),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Hero colorido ──────────────────────────────────────────────
+          // ── Hero colorido (fora do scroll, cobre todo o topo) ──────────
           Container(
             width: double.infinity,
             color: colors.info,
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+            padding: const EdgeInsets.fromLTRB(20, 8, 8, 24),
             child: Column(
               children: [
                 // Cabeçalho
@@ -62,35 +76,26 @@ class _HomeChamaScreenState extends State<HomeChamaScreen> {
                   children: [
                     Text(
                       _greeting(),
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: colors.info.computeLuminance() > 0.4
-                            ? Colors.black54
-                            : Colors.white70,
-                      ),
+                      style: TextStyle(fontSize: 13, color: heroTextSecondary),
                     ),
                     IconButton(
                       onPressed: () => state.goToSettings(),
-                      icon: Icon(
-                        Icons.settings_outlined,
-                        size: 20,
-                        color: colors.info.computeLuminance() > 0.4
-                            ? Colors.black54
-                            : Colors.white70,
-                      ),
+                      icon: Icon(Icons.settings_outlined,
+                          size: 20, color: heroTextSecondary),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                // Círculo
+                const SizedBox(height: 12),
+
+                // Círculo de progresso com percentagem
                 SizedBox(
-                  width: 190,
-                  height: 190,
+                  width: 200,
+                  height: 200,
                   child: CustomPaint(
                     painter: _RingPainter(
                       progress: session?.progress ?? 0.0,
                       trackColor: Colors.white.withOpacity(0.2),
-                      progressColor: Colors.white,
+                      progressColor: heroTextColor,
                     ),
                     child: Center(
                       child: Column(
@@ -98,38 +103,30 @@ class _HomeChamaScreenState extends State<HomeChamaScreen> {
                         children: [
                           Text(
                             session != null
-                                ? '${((session.progress) * 100).clamp(0, 100).round()}%'
+                                ? '${(session.progress * 100).clamp(0, 100).round()}%'
                                 : '0%',
                             style: TextStyle(
-                              fontSize: 40,
+                              fontSize: 42,
                               fontWeight: FontWeight.w700,
-                              color: colors.info.computeLuminance() > 0.4
-                                  ? Colors.black87
-                                  : Colors.white,
-                              height: 1,
+                              color: heroTextColor,
+                              height: 1.0,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             'concluído',
                             style: TextStyle(
-                              fontSize: 12,
-                              color: colors.info.computeLuminance() > 0.4
-                                  ? Colors.black54
-                                  : Colors.white70,
-                            ),
+                                fontSize: 12, color: heroTextSecondary),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             session != null
                                 ? _formatElapsed(session)
-                                : 'sem jejum',
+                                : 'sem jejum activo',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: colors.info.computeLuminance() > 0.4
-                                  ? Colors.black87
-                                  : Colors.white,
+                              color: heroTextColor,
                             ),
                           ),
                         ],
@@ -141,87 +138,87 @@ class _HomeChamaScreenState extends State<HomeChamaScreen> {
             ),
           ),
 
-          // ── Corpo ──────────────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Pontos de fase + faltam X
-                if (session != null) ...[
-                  _phaseDots(session, colors),
-                  const SizedBox(height: 6),
-                  Center(
-                    child: Text(
-                      session.goalReached
-                          ? 'Meta atingida!'
-                          : 'Faltam ${_formatRemaining(session)}',
-                      style: TextStyle(
-                          fontSize: 12, color: colors.textSecondary),
+          // ── Corpo scrollável ───────────────────────────────────────────
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Pontos de fase metabólica
+                  if (session != null) ...[
+                    _phaseDots(session, colors),
+                    const SizedBox(height: 6),
+                    Center(
+                      child: Text(
+                        session.goalReached
+                            ? 'Meta atingida!'
+                            : 'Faltam ${_formatRemaining(session)}',
+                        style: TextStyle(
+                            fontSize: 12, color: colors.textSecondary),
+                      ),
+                    ),
+                  ] else
+                    Center(
+                      child: Text(
+                        'Inicia um jejum para começar',
+                        style: TextStyle(
+                            fontSize: 12, color: colors.textSecondary),
+                      ),
+                    ),
+
+                  const SizedBox(height: 20),
+
+                  // Botão principal
+                  SizedBox(
+                    width: double.infinity,
+                    child: session != null
+                        ? ElevatedButton(
+                            onPressed: () => state.endFasting(),
+                            child: const Text('Terminar jejum'),
+                          )
+                        : ElevatedButton(
+                            onPressed: () => state.startFasting(),
+                            child: const Text('Iniciar jejum'),
+                          ),
+                  ),
+
+                  // Incentivo metabólico
+                  if (session != null)
+                    MetabolicIncentive(
+                      elapsedMinutes: session.elapsed.inMinutes,
+                      colors: colors,
+                    ),
+
+                  const SizedBox(height: 20),
+
+                  // Toggle agendamento
+                  _autoScheduleToggle(state, colors),
+                  const SizedBox(height: 16),
+
+                  // Secção Hoje
+                  Text(
+                    'Hoje',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: colors.textPrimary,
                     ),
                   ),
-                ] else
-                  Center(
-                    child: Text(
-                      'Inicia um jejum para começar',
-                      style: TextStyle(
-                          fontSize: 12, color: colors.textSecondary),
-                    ),
-                  ),
+                  const SizedBox(height: 10),
 
-                const SizedBox(height: 20),
+                  if (lastSession != null && session == null) ...[
+                    ..._lastSessionRows(context, lastSession, colors),
+                    const SizedBox(height: 8),
+                    _waterSummaryRow(context, state, lastSession, colors),
+                  ],
 
-                // Botão principal
-                SizedBox(
-                  width: double.infinity,
-                  child: session != null
-                      ? ElevatedButton(
-                          onPressed: () => state.endFasting(),
-                          child: const Text('Terminar jejum'),
-                        )
-                      : ElevatedButton(
-                          onPressed: () => state.startFasting(),
-                          child: const Text('Iniciar jejum'),
-                        ),
-                ),
+                  if (session != null) const TodayWaterRow(),
 
-                // Incentivo metabólico
-                if (session != null)
-                  MetabolicIncentive(
-                    elapsedMinutes: session.elapsed.inMinutes,
-                    colors: colors,
-                  ),
-
-                const SizedBox(height: 20),
-
-                // Toggle agendamento
-                _autoScheduleToggle(context, state, colors),
-                const SizedBox(height: 16),
-
-                // Secção Hoje
-                Text(
-                  'Hoje',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: colors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 10),
-
-                if (lastSession != null && session == null) ...[
-                  ..._lastSessionRows(context, lastSession, colors),
                   const SizedBox(height: 8),
-                  _waterSummaryRow(context, state, lastSession, colors),
+                  const WaterCard(),
                 ],
-
-                if (session != null) ...[
-                  const TodayWaterRow(),
-                ],
-
-                const SizedBox(height: 8),
-                const WaterCard(),
-              ],
+              ),
             ),
           ),
         ],
@@ -271,8 +268,7 @@ class _HomeChamaScreenState extends State<HomeChamaScreen> {
     );
   }
 
-  Widget _autoScheduleToggle(
-      BuildContext context, AppState state, AppColors colors) {
+  Widget _autoScheduleToggle(AppState state, AppColors colors) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
@@ -413,10 +409,10 @@ class _RingPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 12;
+    final radius = size.width / 2 - 14;
     final paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 14
+      ..strokeWidth = 16
       ..strokeCap = StrokeCap.round;
 
     canvas.drawCircle(center, radius, paint..color = trackColor);
