@@ -7,11 +7,11 @@ import '../models/fasting_session.dart';
 import '../services/app_state.dart';
 import '../theme/app_theme.dart';
 import '../widgets/metabolic_incentive.dart';
-import '../widgets/water_card.dart';
 import '../widgets/today_water_row.dart';
+import '../widgets/water_card.dart';
 
-/// Tema "Chama": círculo de progresso grande com percentagem e pontos de fase
-/// metabólica. Tema premium.
+/// Tema "Chama": hero colorido com círculo de progresso e percentagem.
+/// Fases metabólicas representadas por 4 pontos. Tema premium.
 class HomeChamaScreen extends StatefulWidget {
   const HomeChamaScreen({super.key});
 
@@ -25,10 +25,9 @@ class _HomeChamaScreenState extends State<HomeChamaScreen> {
   @override
   void initState() {
     super.initState();
-    _ticker = Timer.periodic(const Duration(seconds: 5), (_) {
+    _ticker = Timer.periodic(const Duration(seconds: 30), (_) {
       final appState = context.read<AppState>();
       appState.checkFastCompletion();
-      appState.refreshFromStorage();
       if (mounted) setState(() {});
     });
   }
@@ -44,200 +43,236 @@ class _HomeChamaScreenState extends State<HomeChamaScreen> {
     final state = context.watch<AppState>();
     final colors = AppColorsScope.of(context);
     final session = state.activeSession;
-    final progress = session?.progress ?? 0.0;
-    final elapsed = session?.elapsed.inMinutes ?? 0;
+    final lastSession = session ?? _lastSession(state);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Cabeçalho
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                _greeting(),
-                style: TextStyle(fontSize: 13, color: colors.textSecondary),
-              ),
-              IconButton(
-                onPressed: () => context.read<AppState>().goToSettings(),
-                icon: Icon(Icons.settings_outlined,
-                    size: 20, color: colors.textSecondary),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Círculo de progresso central
-          Center(
-            child: SizedBox(
-              width: 200,
-              height: 200,
-              child: CustomPaint(
-                painter: _ChamaRingPainter(
-                  progress: progress,
-                  trackColor: colors.borderTertiary,
-                  progressColor: colors.info,
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        session != null
-                            ? '${(progress * 100).clamp(0, 100).round()}%'
-                            : '0%',
-                        style: TextStyle(
-                          fontSize: 38,
-                          fontWeight: FontWeight.w700,
-                          color: colors.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        'concluído',
-                        style: TextStyle(
-                            fontSize: 12, color: colors.textSecondary),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        session != null
-                            ? _formatElapsed(session)
-                            : 'sem jejum',
-                        style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: colors.info),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // Pontos de fase metabólica
-          if (session != null) ...[
-            _phaseDots(session, colors),
-            const SizedBox(height: 4),
-            Center(
-              child: Text(
-                'Faltam ${_formatRemaining(session)}',
-                style:
-                    TextStyle(fontSize: 12, color: colors.textSecondary),
-              ),
-            ),
-          ] else ...[
-            Center(
-              child: Text(
-                'Inicia um jejum para começar',
-                style:
-                    TextStyle(fontSize: 12, color: colors.textSecondary),
-              ),
-            ),
-          ],
-          const SizedBox(height: 20),
-
-          // Botão principal
-          SizedBox(
+          // ── Hero colorido ──────────────────────────────────────────────
+          Container(
             width: double.infinity,
-            child: session != null
-                ? ElevatedButton(
-                    onPressed: () => state.endFasting(),
-                    child: const Text('Terminar jejum'),
-                  )
-                : ElevatedButton(
-                    onPressed: () => state.startFasting(),
-                    child: const Text('Iniciar jejum'),
+            color: colors.info,
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+            child: Column(
+              children: [
+                // Cabeçalho
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _greeting(),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: colors.info.computeLuminance() > 0.4
+                            ? Colors.black54
+                            : Colors.white70,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => state.goToSettings(),
+                      icon: Icon(
+                        Icons.settings_outlined,
+                        size: 20,
+                        color: colors.info.computeLuminance() > 0.4
+                            ? Colors.black54
+                            : Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Círculo
+                SizedBox(
+                  width: 190,
+                  height: 190,
+                  child: CustomPaint(
+                    painter: _RingPainter(
+                      progress: session?.progress ?? 0.0,
+                      trackColor: Colors.white.withOpacity(0.2),
+                      progressColor: Colors.white,
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            session != null
+                                ? '${((session.progress) * 100).clamp(0, 100).round()}%'
+                                : '0%',
+                            style: TextStyle(
+                              fontSize: 40,
+                              fontWeight: FontWeight.w700,
+                              color: colors.info.computeLuminance() > 0.4
+                                  ? Colors.black87
+                                  : Colors.white,
+                              height: 1,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'concluído',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: colors.info.computeLuminance() > 0.4
+                                  ? Colors.black54
+                                  : Colors.white70,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            session != null
+                                ? _formatElapsed(session)
+                                : 'sem jejum',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: colors.info.computeLuminance() > 0.4
+                                  ? Colors.black87
+                                  : Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
+                ),
+              ],
+            ),
           ),
 
-          // Incentivo metabólico
-          if (session != null)
-            MetabolicIncentive(
-              elapsedMinutes: elapsed,
-              colors: colors,
+          // ── Corpo ──────────────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Pontos de fase + faltam X
+                if (session != null) ...[
+                  _phaseDots(session, colors),
+                  const SizedBox(height: 6),
+                  Center(
+                    child: Text(
+                      session.goalReached
+                          ? 'Meta atingida!'
+                          : 'Faltam ${_formatRemaining(session)}',
+                      style: TextStyle(
+                          fontSize: 12, color: colors.textSecondary),
+                    ),
+                  ),
+                ] else
+                  Center(
+                    child: Text(
+                      'Inicia um jejum para começar',
+                      style: TextStyle(
+                          fontSize: 12, color: colors.textSecondary),
+                    ),
+                  ),
+
+                const SizedBox(height: 20),
+
+                // Botão principal
+                SizedBox(
+                  width: double.infinity,
+                  child: session != null
+                      ? ElevatedButton(
+                          onPressed: () => state.endFasting(),
+                          child: const Text('Terminar jejum'),
+                        )
+                      : ElevatedButton(
+                          onPressed: () => state.startFasting(),
+                          child: const Text('Iniciar jejum'),
+                        ),
+                ),
+
+                // Incentivo metabólico
+                if (session != null)
+                  MetabolicIncentive(
+                    elapsedMinutes: session.elapsed.inMinutes,
+                    colors: colors,
+                  ),
+
+                const SizedBox(height: 20),
+
+                // Toggle agendamento
+                _autoScheduleToggle(context, state, colors),
+                const SizedBox(height: 16),
+
+                // Secção Hoje
+                Text(
+                  'Hoje',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: colors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                if (lastSession != null && session == null) ...[
+                  ..._lastSessionRows(context, lastSession, colors),
+                  const SizedBox(height: 8),
+                  _waterSummaryRow(context, state, lastSession, colors),
+                ],
+
+                if (session != null) ...[
+                  const TodayWaterRow(),
+                ],
+
+                const SizedBox(height: 8),
+                const WaterCard(),
+              ],
             ),
-
-          const SizedBox(height: 20),
-
-          // Toggle agendamento automático
-          _autoScheduleToggle(context, state),
-          const SizedBox(height: 12),
-
-          // Secção Hoje
-          Text('Hoje',
-              style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: colors.textPrimary)),
-          const SizedBox(height: 10),
-          if (_lastSession(state) != null) ...[
-            ..._lastSessionRows(context, _lastSession(state)!),
-            const SizedBox(height: 8),
-          ],
-          if (session != null)
-            const TodayWaterRow()
-          else if (_lastSession(state) != null)
-            _waterSummaryRow(context, state, _lastSession(state)!),
-          const SizedBox(height: 8),
-          const WaterCard(),
+          ),
         ],
       ),
     );
   }
 
-  /// Quatro pontos representando as fases: 0-8h, 8-12h, 12-16h, 16h+
   Widget _phaseDots(FastingSession session, AppColors colors) {
     final minutes = session.elapsed.inMinutes;
     final phases = [
-      minutes >= 0,      // 0–8h  (sempre verdadeiro se há sessão)
-      minutes >= 8 * 60, // 8–12h
-      minutes >= 12 * 60,// 12–16h
-      minutes >= 16 * 60,// 16h+
+      true,
+      minutes >= 8 * 60,
+      minutes >= 12 * 60,
+      minutes >= 16 * 60,
     ];
-    final labels = ['0h', '8h', '12h', '16h'];
+    const labels = ['0h', '8h', '12h', '16h'];
 
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(phases.length, (i) {
-            final done = phases[i];
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: Column(
-                children: [
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 400),
-                    width: 32,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: done
-                          ? colors.info
-                          : colors.borderTertiary,
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(labels[i],
-                      style: TextStyle(
-                          fontSize: 9,
-                          color: done
-                              ? colors.info
-                              : colors.textSecondary)),
-                ],
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(phases.length, (i) {
+        final done = phases[i];
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6),
+          child: Column(
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 400),
+                width: 34,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: done ? colors.info : colors.borderTertiary,
+                  borderRadius: BorderRadius.circular(3),
+                ),
               ),
-            );
-          }),
-        ),
-      ],
+              const SizedBox(height: 4),
+              Text(
+                labels[i],
+                style: TextStyle(
+                  fontSize: 9,
+                  color: done ? colors.info : colors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
     );
   }
 
-  Widget _autoScheduleToggle(BuildContext context, AppState state) {
-    final colors = AppColorsScope.of(context);
+  Widget _autoScheduleToggle(
+      BuildContext context, AppState state, AppColors colors) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
@@ -250,9 +285,10 @@ class _HomeChamaScreenState extends State<HomeChamaScreen> {
             child: Text(
               'Agendar ciclo automaticamente',
               style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: colors.textPrimary),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: colors.textPrimary,
+              ),
             ),
           ),
           Switch(
@@ -264,40 +300,42 @@ class _HomeChamaScreenState extends State<HomeChamaScreen> {
     );
   }
 
-  Widget _waterSummaryRow(
-      BuildContext context, AppState state, FastingSession session) {
+  Widget _waterSummaryRow(BuildContext context, AppState state,
+      FastingSession session, AppColors colors) {
     return _infoRow(
       context,
       Icons.water_drop_outlined,
       '${(session.waterMl / 250).round()} copos de água (resumo)',
       '${session.waterMl}ml de ${state.waterGoalMl}ml neste ciclo',
+      colors,
     );
   }
 
-  FastingSession? _lastSession(AppState state) {
-    if (state.activeSession != null) return null;
-    final history = state.history;
-    if (history.isEmpty) return null;
-    return history.reduce(
-      (a, b) => a.startTime.isAfter(b.startTime) ? a : b,
-    );
-  }
-
-  List<Widget> _lastSessionRows(BuildContext context, FastingSession session) {
+  List<Widget> _lastSessionRows(
+      BuildContext context, FastingSession session, AppColors colors) {
     return [
-      _infoRow(context, Icons.check_circle, 'Jejum iniciado',
-          DateFormat("HH:mm 'de' dd/MM").format(session.startTime)),
+      _infoRow(
+        context,
+        Icons.check_circle,
+        'Jejum iniciado',
+        DateFormat("HH:mm 'de' dd/MM").format(session.startTime),
+        colors,
+      ),
       if (session.endTime != null) ...[
         const SizedBox(height: 8),
-        _infoRow(context, Icons.flag_outlined, 'Fim de jejum',
-            DateFormat("HH:mm 'de' dd/MM").format(session.endTime!)),
+        _infoRow(
+          context,
+          Icons.flag_outlined,
+          'Fim de jejum',
+          DateFormat("HH:mm 'de' dd/MM").format(session.endTime!),
+          colors,
+        ),
       ],
     ];
   }
 
-  Widget _infoRow(
-      BuildContext context, IconData icon, String title, String subtitle) {
-    final colors = AppColorsScope.of(context);
+  Widget _infoRow(BuildContext context, IconData icon, String title,
+      String subtitle, AppColors colors) {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -326,8 +364,8 @@ class _HomeChamaScreenState extends State<HomeChamaScreen> {
                         fontWeight: FontWeight.w600,
                         color: colors.textPrimary)),
                 Text(subtitle,
-                    style:
-                        TextStyle(fontSize: 11, color: colors.textSecondary)),
+                    style: TextStyle(
+                        fontSize: 11, color: colors.textSecondary)),
               ],
             ),
           ),
@@ -336,30 +374,37 @@ class _HomeChamaScreenState extends State<HomeChamaScreen> {
     );
   }
 
+  FastingSession? _lastSession(AppState state) {
+    final history = state.history;
+    if (history.isEmpty) return null;
+    return history.reduce(
+        (a, b) => a.startTime.isAfter(b.startTime) ? a : b);
+  }
+
   String _greeting() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) return 'Bom dia';
-    if (hour < 19) return 'Boa tarde';
+    final h = DateTime.now().hour;
+    if (h < 12) return 'Bom dia';
+    if (h < 19) return 'Boa tarde';
     return 'Boa noite';
   }
 
-  String _formatElapsed(FastingSession session) {
-    final e = session.elapsed;
+  String _formatElapsed(FastingSession s) {
+    final e = s.elapsed;
     return '${e.inHours}h ${e.inMinutes % 60}m de jejum';
   }
 
-  String _formatRemaining(FastingSession session) {
-    final r = session.remainingRounded;
+  String _formatRemaining(FastingSession s) {
+    final r = s.remainingRounded;
     return '${r.inHours}h ${r.inMinutes % 60}m';
   }
 }
 
-class _ChamaRingPainter extends CustomPainter {
+class _RingPainter extends CustomPainter {
   final double progress;
   final Color trackColor;
   final Color progressColor;
 
-  _ChamaRingPainter({
+  const _RingPainter({
     required this.progress,
     required this.trackColor,
     required this.progressColor,
@@ -368,36 +413,25 @@ class _ChamaRingPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 10;
+    final radius = size.width / 2 - 12;
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 14
+      ..strokeCap = StrokeCap.round;
 
-    // Track
-    canvas.drawCircle(
-      center,
-      radius,
-      Paint()
-        ..color = trackColor
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 14,
-    );
-
-    // Progresso
-    final sweep = 2 * math.pi * progress.clamp(0.0, 1.0);
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -math.pi / 2,
-      sweep,
-      false,
-      Paint()
-        ..color = progressColor
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 14
-        ..strokeCap = StrokeCap.round,
-    );
+    canvas.drawCircle(center, radius, paint..color = trackColor);
+    if (progress > 0) {
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        -math.pi / 2,
+        2 * math.pi * progress.clamp(0.0, 1.0),
+        false,
+        paint..color = progressColor,
+      );
+    }
   }
 
   @override
-  bool shouldRepaint(covariant _ChamaRingPainter old) =>
-      old.progress != progress ||
-      old.trackColor != trackColor ||
-      old.progressColor != progressColor;
+  bool shouldRepaint(covariant _RingPainter old) =>
+      old.progress != progress;
 }
