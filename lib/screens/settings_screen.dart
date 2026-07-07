@@ -5,6 +5,7 @@ import '../models/fasting_session.dart';
 import '../services/app_state.dart';
 import '../services/backup_service.dart';
 import '../theme/app_theme.dart';
+import '../l10n/app_localizations.dart';
 import 'paywall_screen.dart';
 import 'profiles_screen.dart';
 import 'theme_picker_screen.dart';
@@ -84,6 +85,12 @@ class SettingsScreen extends StatelessWidget {
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const ThemePickerScreen()),
             ),
+          ),
+          _settingRow(
+            context,
+            label: 'Idioma',
+            value: state.languageCode == 'pt' ? 'Português' : 'English',
+            onTap: () => _showLanguagePicker(context, state),
           ),
           const SizedBox(height: 14),
           _sectionLabel(context, 'Jejum'),
@@ -253,6 +260,65 @@ class SettingsScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  void _showLanguagePicker(BuildContext context, AppState state) {
+    final colors = AppColorsScope.of(context);
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: Text(
+                    'Idioma / Language',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: colors.textPrimary,
+                    ),
+                  ),
+                ),
+                const Divider(),
+                ListTile(
+                  leading: const Text('🇵🇹', style: TextStyle(fontSize: 24)),
+                  title: Text('Português',
+                      style: TextStyle(color: colors.textPrimary)),
+                  trailing: state.languageCode == 'pt'
+                      ? Icon(Icons.check, color: colors.info)
+                      : null,
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    state.setLanguageCode('pt');
+                  },
+                ),
+                ListTile(
+                  leading: const Text('🇬🇧', style: TextStyle(fontSize: 24)),
+                  title: Text('English',
+                      style: TextStyle(color: colors.textPrimary)),
+                  trailing: state.languageCode == 'en'
+                      ? Icon(Icons.check, color: colors.info)
+                      : null,
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    state.setLanguageCode('en');
+                  },
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
