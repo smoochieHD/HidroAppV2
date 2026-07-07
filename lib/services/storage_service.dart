@@ -168,6 +168,14 @@ class StorageService {
 
   String loadSelectedTheme() => _prefs.getString(_keySelectedTheme) ?? 'diario';
 
+  static const _keyLanguageCode = 'language_code';
+
+  Future<void> saveLanguageCode(String code) async {
+    await _prefs.setString(_keyLanguageCode, code);
+  }
+
+  String loadLanguageCode() => _prefs.getString(_keyLanguageCode) ?? 'pt';
+
   Future<void> saveSelectedPalette(String paletteId) async {
     await _prefs.setString(_keySelectedPalette, paletteId);
   }
