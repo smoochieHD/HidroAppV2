@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'services/app_state.dart';
 import 'theme/app_theme.dart';
+import 'l10n/app_localizations.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/main_shell.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('pt_PT');
+  await initializeDateFormatting('en_US');
   final appState = await AppState.create();
   runApp(HidroApp(appState: appState));
 }
 
 class HidroApp extends StatefulWidget {
   final AppState appState;
-
   const HidroApp({super.key, required this.appState});
 
   @override
@@ -28,10 +30,6 @@ class _HidroAppState extends State<HidroApp> {
   @override
   void initState() {
     super.initState();
-    // Sempre que a app volta ao primeiro plano, verifica se um jejum
-    // agendado (janela de alimentação) já devia ter começado enquanto a
-    // app estava em background — cobre o caso de a notificação de início
-    // ter disparado sem o utilizador ter tocado nela.
     _lifecycleListener = AppLifecycleListener(
       onResume: () => widget.appState.checkScheduledNextFast(),
     );
@@ -55,6 +53,15 @@ class _HidroAppState extends State<HidroApp> {
             debugShowCheckedModeBanner: false,
             theme: AppTheme.light(colors),
             themeMode: colors.isDark ? ThemeMode.dark : ThemeMode.light,
+            // ── Localizations ──────────────────────────────────────────
+            locale: Locale(appState.languageCode),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
             home: appState.storage.isOnboardingDone()
                 ? const MainShell()
                 : const OnboardingScreen(),
