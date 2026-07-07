@@ -19,6 +19,7 @@ class AppState extends ChangeNotifier {
   HomeThemeId selectedTheme;
   AppPaletteId palette;
   bool isPremium;
+  String languageCode;
 
   /// Quando ligado, ao terminar um jejum (manualmente ou automaticamente
   /// ao atingir a meta), o próximo jejum é agendado automaticamente para
@@ -47,6 +48,7 @@ class AppState extends ChangeNotifier {
     required this.selectedTheme,
     required this.palette,
     required this.isPremium,
+    required this.languageCode,
     required this.autoScheduleNextCycle,
     required this.profiles,
     required this.activeProfileId,
@@ -63,6 +65,7 @@ class AppState extends ChangeNotifier {
       selectedTheme: HomeThemeIdX.fromId(storage.loadSelectedTheme()),
       palette: AppPaletteIdX.fromId(storage.loadSelectedPalette()),
       isPremium: storage.loadPremiumStatus(),
+      languageCode: storage.loadLanguageCode(),
       autoScheduleNextCycle: storage.loadAutoScheduleNextCycle(),
       profiles: storage.loadFastingProfiles(),
       activeProfileId: storage.loadActiveProfileId(),
@@ -297,6 +300,12 @@ class AppState extends ChangeNotifier {
     if (newPalette.isPremium && !isPremium) return;
     palette = newPalette;
     await storage.saveSelectedPalette(newPalette.id);
+    notifyListeners();
+  }
+
+  Future<void> setLanguageCode(String code) async {
+    languageCode = code;
+    await storage.saveLanguageCode(code);
     notifyListeners();
   }
 
