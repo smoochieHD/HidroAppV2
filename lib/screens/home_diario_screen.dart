@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/fasting_session.dart';
@@ -41,6 +42,7 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final state = context.watch<AppState>();
     final colors = AppColorsScope.of(context);
     final session = state.activeSession;
@@ -77,7 +79,7 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
           _autoScheduleToggle(context, state),
           const SizedBox(height: 20),
           Text(
-            'Hoje',
+            l.today,
             style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -88,7 +90,7 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
             _timelineItem(
               context: context,
               icon: Icons.check_circle,
-              title: 'Jejum iniciado',
+              title: l.fastingStarted,
               subtitle: DateFormat("HH:mm 'de' dd/MM")
                   .format(lastSession.startTime),
             ),
@@ -97,7 +99,7 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
             _timelineItem(
               context: context,
               icon: Icons.flag_outlined,
-              title: 'Fim de jejum',
+              title: l.fastingEnded,
               subtitle: DateFormat("HH:mm 'de' dd/MM")
                   .format(lastSession.endTime!),
             ),
@@ -128,7 +130,7 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
             _timelineItem(
               context: context,
               icon: Icons.schedule,
-              title: 'Janela de alimentação',
+              title: l.fastingWindow,
               subtitle:
                   'Começa às ${DateFormat.Hm().format(session.plannedEndTime)}',
               dashed: true,
@@ -154,7 +156,7 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
         children: [
           Expanded(
             child: Text(
-              'Agendar ciclo automaticamente',
+              l.fastingScheduleAuto,
               style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -172,9 +174,9 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
 
   String _greeting() {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Bom dia';
-    if (hour < 19) return 'Boa tarde';
-    return 'Boa noite';
+    if (hour < 12) return l.greetingMorning;
+    if (hour < 19) return l.greetingAfternoon;
+    return l.greetingEvening;
   }
 
   /// Última sessão de jejum conhecida: a ativa, se houver, ou a mais
@@ -207,14 +209,14 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            isOver ? 'Meta atingida' : 'A meio do jejum',
+            isOver ? l.fastingGoalReached : l.fastingInProgress,
             style: TextStyle(fontSize: 12, color: colors.info),
           ),
           const SizedBox(height: 4),
           Text(
             isOver
-                ? 'Há mais $hours h $minutes min'
-                : 'Faltam $hours h $minutes min',
+                ? l.fastingTimeOver(hours, minutes)
+                : l.fastingTimeLeft(hours, minutes),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -223,7 +225,7 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
           ),
           const SizedBox(height: 2),
           Text(
-            'Janela termina às ${DateFormat.Hm().format(session.plannedEndTime)}',
+            l.fastingWindowEnds(DateFormat.Hm().format(session.plannedEndTime)),
             style: TextStyle(fontSize: 12, color: colors.info),
           ),
           MetabolicIncentive(
@@ -235,7 +237,7 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
             width: double.infinity,
             child: OutlinedButton(
               onPressed: () => _confirmEndFasting(context),
-              child: const Text('Terminar jejum agora'),
+              child: const Text(l.endFastingNow),
             ),
           ),
         ],
@@ -262,7 +264,7 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Próximo jejum agendado',
+              l.fastingNextScheduled,
               style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -271,7 +273,7 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
             const SizedBox(height: 4),
             Text(
               remaining.isNegative
-                  ? 'A começar...'
+                  ? l.starting
                   : 'Daqui a ${h}h ${m}min',
               style: TextStyle(fontSize: 12, color: colors.textSecondary),
             ),
@@ -280,7 +282,7 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () => state.startFasting(),
-                child: const Text('Iniciar agora'),
+                child: const Text(l.fastingStartNow),
               ),
             ),
           ],
@@ -299,7 +301,7 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Sem jejum ativo',
+            l.fastingNoActive,
             style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -315,7 +317,7 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () => state.startFasting(),
-              child: const Text('Iniciar jejum'),
+              child: const Text(l.startFasting),
             ),
           ),
         ],
@@ -328,12 +330,12 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Terminar jejum?'),
-        content: const Text('Isto regista o fim da sessão atual.'),
+        title: const Text(l.endFastingQuestion),
+        content: const Text(l.endFastingConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancelar'),
+            child: const Text(l.cancel),
           ),
           TextButton(
             onPressed: () {
