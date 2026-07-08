@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../models/fasting_session.dart';
 import '../services/app_state.dart';
@@ -9,6 +10,7 @@ class ProfilesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final state = context.watch<AppState>();
     final colors = AppColors.forPalette(state.palette);
 
@@ -16,7 +18,7 @@ class ProfilesScreen extends StatelessWidget {
       colors: colors,
       child: Scaffold(
         backgroundColor: colors.background,
-        appBar: AppBar(title: const Text('Perfis de jejum')),
+        appBar: AppBar(title: const Text(l.profilesFasting)),
         body: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -34,7 +36,7 @@ class ProfilesScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Definições atuais',
+                          Text(l.settingsCurrent,
                               style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
@@ -52,13 +54,13 @@ class ProfilesScreen extends StatelessWidget {
                     ),
                     TextButton(
                       onPressed: () => _showSaveDialog(context, state),
-                      child: const Text('Guardar como perfil'),
+                      child: const Text(l.profilesSave),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 20),
-              Text('Os teus perfis',
+              Text(l.profilesMy,
                   style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -113,7 +115,7 @@ class ProfilesScreen extends StatelessWidget {
                             if (!isActive)
                               TextButton(
                                 onPressed: () => state.applyProfile(profile.id),
-                                child: const Text('Usar'),
+                                child: const Text(l.use),
                               )
                             else
                               Padding(
@@ -146,18 +148,18 @@ class ProfilesScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Guardar perfil'),
+        title: const Text(l.profilesSaveAction),
         content: TextField(
           controller: controller,
           autofocus: true,
           decoration: const InputDecoration(
-            hintText: 'Ex: Dias de trabalho',
+            hintText: l.profilesExampleName,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancelar'),
+            child: const Text(l.cancel),
           ),
           TextButton(
             onPressed: () {
@@ -166,7 +168,7 @@ class ProfilesScreen extends StatelessWidget {
               state.saveCurrentAsProfile(name);
               Navigator.of(ctx).pop();
             },
-            child: const Text('Guardar'),
+            child: const Text(l.save),
           ),
         ],
       ),
@@ -177,19 +179,19 @@ class ProfilesScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Remover perfil?'),
-        content: const Text('Esta ação não pode ser desfeita.'),
+        title: const Text(l.profilesRemove),
+        content: const Text(l.actionIrreversible),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancelar'),
+            child: const Text(l.cancel),
           ),
           TextButton(
             onPressed: () {
               state.deleteProfile(profileId);
               Navigator.of(ctx).pop();
             },
-            child: const Text('Remover'),
+            child: const Text(l.remove),
           ),
         ],
       ),
