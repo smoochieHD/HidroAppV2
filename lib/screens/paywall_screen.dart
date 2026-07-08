@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../services/app_state.dart';
 import '../theme/app_theme.dart';
@@ -18,12 +19,13 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final state = context.read<AppState>();
     final colors = AppColors.forPalette(state.palette);
 
     return AppColorsScope(
       colors: colors,
-      child: Builder(builder: (context) => Scaffold(
+      child: Scaffold(
         backgroundColor: colors.background,
         body: SafeArea(
           child: Padding(
@@ -37,24 +39,24 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ),
-                Text('Hidro Premium',
+                Text(l.premium,
                     style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
                         color: colors.textPrimary)),
                 const SizedBox(height: 4),
-                Text('Mais temas. Mais controlo.',
+                Text(l.premiumMore,
                     style:
                         TextStyle(fontSize: 13, color: colors.textSecondary)),
                 const SizedBox(height: 20),
                 _benefitRow(context, 'Temas Relógio e Linha do tempo'),
-                _benefitRow(context, 'Paletas de cor extra'),
-                _benefitRow(context, 'Estatísticas avançadas'),
-                _benefitRow(context, 'Apoias o desenvolvimento da app'),
+                _benefitRow(context, l.premiumPalettes),
+                _benefitRow(context, l.statsAdvancedTitle),
+                _benefitRow(context, l.premiumSupport),
                 const SizedBox(height: 20),
                 _planOption(
                   context,
-                  title: 'Anual',
+                  title: l.statsYearly,
                   subtitle: '22,99€ / ano · poupa 37%',
                   selected: _yearlySelected,
                   onTap: () => setState(() => _yearlySelected = true),
@@ -62,7 +64,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                 const SizedBox(height: 10),
                 _planOption(
                   context,
-                  title: 'Mensal',
+                  title: l.statsMonthly,
                   subtitle: '2,99€ / mês',
                   selected: !_yearlySelected,
                   onTap: () => setState(() => _yearlySelected = false),
@@ -76,11 +78,11 @@ class _PaywallScreenState extends State<PaywallScreen> {
                       await state.setPremiumStatus(true);
                       if (context.mounted) Navigator.of(context).pop();
                     },
-                    child: const Text('Continuar'),
+                    child: const Text(l.continueAction),
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text('Cancela quando quiseres',
+                Text(l.premiumCancel,
                     style:
                         TextStyle(fontSize: 11, color: colors.textSecondary)),
               ],
@@ -88,7 +90,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
           ),
         ),
       ),
-    ));
+    );
   }
 
   Widget _benefitRow(BuildContext context, String text) {
