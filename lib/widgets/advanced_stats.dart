@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../models/fasting_session.dart';
 import '../theme/app_theme.dart';
 
@@ -19,6 +20,7 @@ class ConsistencyHeatmap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final colors = AppColorsScope.of(context);
     final today = DateTime.now();
     final todayOnly = DateTime(today.year, today.month, today.day);
@@ -91,7 +93,7 @@ class ConsistencyHeatmap extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           trackedCount == 0
-              ? 'Ainda sem dados suficientes neste período.'
+              ? l.statsNoDataPeriod
               : '$percentage% dos dias com meta cumprida',
           style: TextStyle(fontSize: 11, color: colors.textSecondary),
         ),
@@ -116,6 +118,7 @@ class _DurationTrendChartState extends State<DurationTrendChart> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final colors = AppColorsScope.of(context);
     final points = _weekly ? _weeklyAverages() : _dailyValues();
 
@@ -125,7 +128,7 @@ class _DurationTrendChartState extends State<DurationTrendChart> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Tendência da duração',
+            Text(l.statsDurationTrend,
                 style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -138,7 +141,7 @@ class _DurationTrendChartState extends State<DurationTrendChart> {
               ),
               child: Row(
                 children: [
-                  _modeButton(context, 'Semanal', true),
+                  _modeButton(context, l.statsWeekly, true),
                   _modeButton(context, 'Diário', false),
                 ],
               ),
@@ -259,6 +262,7 @@ class SmartInsights extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final colors = AppColorsScope.of(context);
     if (history.length < _minSessions) {
       return Text(
@@ -282,7 +286,7 @@ class SmartInsights extends StatelessWidget {
           _insightRow(context, Icons.water_drop_outlined, waterInsight),
         if (startTimeInsight == null && waterInsight == null)
           Text(
-            'Ainda não encontrámos um padrão claro nos teus dados.',
+            l.statsNoPattern,
             style: TextStyle(fontSize: 12, color: colors.textSecondary),
           ),
       ],
