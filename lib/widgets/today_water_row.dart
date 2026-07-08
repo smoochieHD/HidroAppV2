@@ -2,24 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/app_state.dart';
 import '../theme/app_theme.dart';
+import '../l10n/app_localizations.dart';
 
-/// Bloco "Hoje · X copos de água · + copo", idêntico em todos os temas.
-/// Extraído do tema Diário para garantir que os três temas mostram
-/// exatamente o mesmo visual, em vez de versões ligeiramente diferentes.
 class TodayWaterRow extends StatelessWidget {
   const TodayWaterRow({super.key});
 
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
+    final l = context.l10n;
     return _timelineItem(
       context: context,
       icon: Icons.water_drop_outlined,
-      title: '${(state.currentWaterMl / 250).round()} copos de água',
-      subtitle: '${state.currentWaterMl}ml de ${state.waterGoalMl}ml',
+      title: l.waterCups((state.currentWaterMl / 250).round()),
+      subtitle: l.waterMlOfGoal(state.currentWaterMl, state.waterGoalMl),
       trailing: TextButton(
         onPressed: () => state.addWater(250),
-        child: const Text('+ copo'),
+        child: Text(l.waterAddCup),
       ),
     );
   }
@@ -54,18 +53,14 @@ class TodayWaterRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: colors.textPrimary,
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: TextStyle(fontSize: 11, color: colors.textSecondary),
-                ),
+                Text(title,
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: colors.textPrimary)),
+                Text(subtitle,
+                    style: TextStyle(
+                        fontSize: 11, color: colors.textSecondary)),
               ],
             ),
           ),
