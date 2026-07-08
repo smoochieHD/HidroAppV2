@@ -15,6 +15,7 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final state = context.watch<AppState>();
     final colors = AppColorsScope.of(context);
 
@@ -32,10 +33,10 @@ class SettingsScreen extends StatelessWidget {
                     context.read<AppState>().goToTab(AppState.tabIndexHome),
                 icon: Icon(Icons.arrow_back,
                     size: 22, color: colors.textPrimary),
-                tooltip: 'Voltar ao início',
+                tooltip: l.back,
               ),
               const SizedBox(width: 12),
-              Text('Definições',
+              Text(l.settings,
                   style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -60,13 +61,13 @@ class SettingsScreen extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Hidro Premium',
+                        Text(l.premium,
                             style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
                                 color: colors.teal)),
                         const SizedBox(height: 2),
-                        Text('Desbloqueia todos os temas',
+                        Text(l.themeUnlock,
                             style: TextStyle(
                                 fontSize: 11, color: colors.teal)),
                       ],
@@ -77,10 +78,10 @@ class SettingsScreen extends StatelessWidget {
               ),
             ),
           const SizedBox(height: 18),
-          _sectionLabel(context, 'Aparência'),
+          _sectionLabel(context, l.settingsAppearance),
           _settingRow(
             context,
-            label: 'Tema',
+            label: l.settingsTheme,
             value: state.selectedTheme.label,
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const ThemePickerScreen()),
@@ -88,67 +89,67 @@ class SettingsScreen extends StatelessWidget {
           ),
           _settingRow(
             context,
-            label: 'Idioma',
+            label: l.settingsLanguage,
             value: state.languageCode == 'pt' ? 'Português' : 'English',
             onTap: () => _showLanguagePicker(context, state),
           ),
           const SizedBox(height: 14),
-          _sectionLabel(context, 'Jejum'),
+          _sectionLabel(context, l.fastingJejum),
           _settingRow(
             context,
-            label: 'Protocolo',
+            label: l.protocol,
             value: protocolLabel(state.defaultProtocolMinutes),
             onTap: () => _showProtocolPicker(context, state),
           ),
           _settingRow(
             context,
-            label: 'Tempo de comer',
+            label: l.fastingEatingTime,
             value: formatDurationMinutes(state.eatingWindowMinutes),
             onTap: () => _showEatingWindowPicker(context, state),
           ),
           _settingRow(
             context,
-            label: 'Perfis',
+            label: l.profiles,
             value: state.profiles.isEmpty ? 'Nenhum' : '${state.profiles.length}',
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const ProfilesScreen()),
             ),
           ),
           const SizedBox(height: 14),
-          _sectionLabel(context, 'Água'),
+          _sectionLabel(context, l.water),
           _settingRow(
             context,
-            label: 'Meta por ciclo',
+            label: l.waterGoalPer,
             value: '${(state.waterGoalMl / 1000).toStringAsFixed(1)} L',
             onTap: () => _showWaterGoalPicker(context, state),
           ),
           const SizedBox(height: 14),
-          _sectionLabel(context, 'Notificações'),
+          _sectionLabel(context, l.settingsNotifications),
           _toggleRow(
             context,
-            label: 'Relatório semanal',
-            subtitle: 'Domingo às 19h, com o resumo da semana',
+            label: l.notifWeeklyReport,
+            subtitle: l.notifWeeklyTime,
             value: state.weeklyReportEnabled,
             onChanged: (v) => state.setWeeklyReportEnabled(v),
           ),
           _toggleRow(
             context,
-            label: 'Lembretes de água',
-            subtitle: 'Avisos ao longo do dia (8h-22h)',
+            label: l.waterReminders,
+            subtitle: l.waterReminderDesc,
             value: state.waterRemindersEnabled,
             onChanged: (v) => state.setWaterRemindersEnabled(v),
           ),
           const SizedBox(height: 14),
-          _sectionLabel(context, 'Backup'),
+          _sectionLabel(context, l.settingsBackup),
           _settingRow(
             context,
-            label: 'Exportar dados',
+            label: l.settingsExport,
             value: '',
             onTap: () => _exportBackup(context),
           ),
           _settingRow(
             context,
-            label: 'Importar dados',
+            label: l.settingsImport,
             value: '',
             onTap: () => _importBackup(context),
           ),
@@ -164,7 +165,7 @@ class SettingsScreen extends StatelessWidget {
     } catch (_) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Não foi possível exportar o backup.')),
+          SnackBar(content: Text(context.l10n.settingsExportError)),
         );
       }
     }
@@ -338,8 +339,8 @@ class SettingsScreen extends StatelessWidget {
           (16 * 60, '16:8'),
           (18 * 60, '18:6'),
           (20 * 60, '20:4'),
-          (23 * 60, 'OMAD · 23:1'),
-          (36 * 60, 'Dias alternados · 36h'),
+          (23 * 60, l.protocolOmad),
+          (36 * 60, l.protocolAltDays),
         ];
         return SafeArea(
           child: Padding(
@@ -348,7 +349,7 @@ class SettingsScreen extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Protocolo de jejum',
+                Text(l.fastingProtocol,
                     style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -367,7 +368,7 @@ class SettingsScreen extends StatelessWidget {
                       },
                     )),
                 ListTile(
-                  title: Text('Personalizado',
+                  title: Text(l.protocolCustom,
                       style: TextStyle(color: colors.textPrimary)),
                   trailing: Icon(Icons.chevron_right,
                       color: colors.textSecondary),
@@ -376,8 +377,8 @@ class SettingsScreen extends StatelessWidget {
                     _showCustomDurationPicker(
                       context,
                       state,
-                      title: 'Duração do jejum',
-                      subtitle: 'Define quanto tempo dura o jejum',
+                      title: l.protocolFastingDuration,
+                      subtitle: l.protocolFastingDurationSub,
                       initialMinutes: state.defaultProtocolMinutes,
                       onConfirm: state.setDefaultProtocolMinutesWithAutoWindow,
                     );
@@ -395,9 +396,9 @@ class SettingsScreen extends StatelessWidget {
     _showCustomDurationPicker(
       context,
       state,
-      title: 'Tempo de comer',
+      title: l.fastingEatingTime,
       subtitle:
-          'Quanto tempo depois do fim do jejum até começar o próximo',
+          l.fastingScheduleDelay,
       initialMinutes: state.eatingWindowMinutes,
       onConfirm: state.setEatingWindowMinutes,
     );
@@ -477,7 +478,7 @@ class SettingsScreen extends StatelessWidget {
                                 onConfirm(selectedHours * 60 + selectedMinutes);
                                 Navigator.of(ctx).pop();
                               },
-                        child: const Text('Confirmar'),
+                        child: const Text(l.confirm),
                       ),
                     ),
                   ],
@@ -535,7 +536,7 @@ class SettingsScreen extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Meta de água por ciclo',
+                Text(l.waterGoalCycle,
                     style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
