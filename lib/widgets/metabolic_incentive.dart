@@ -1,16 +1,9 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../l10n/app_localizations.dart';
 
 /// Exibe um incentivo metabólico contextual durante uma sessão de jejum activo.
-///
 /// Não mostra nada se [elapsedMinutes] for inferior a 10 horas.
-/// A partir daí, o texto evolui automaticamente pelas fases:
-///   ≥ 10 h → aviso antecipado (faltam 2 h para iniciar a queima de gordura)
-///   ≥ 12 h → glicogénio a esgotar-se, transição para queima de gordura
-///   ≥ 16 h → lipólise em pleno
-///   ≥ 24 h → cetose activa
-///
-/// Usa [colors] recebido externamente para seguir qualquer paleta/tema.
 class MetabolicIncentive extends StatelessWidget {
   final int elapsedMinutes;
   final AppColors colors;
@@ -23,7 +16,8 @@ class MetabolicIncentive extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final phase = _resolvePhase();
+    final l = context.l10n;
+    final phase = _resolvePhase(l);
     if (phase == null) return const SizedBox.shrink();
 
     return Column(
@@ -67,38 +61,30 @@ class MetabolicIncentive extends StatelessWidget {
     );
   }
 
-  _Phase? _resolvePhase() {
+  _Phase? _resolvePhase(AppLocalizations l) {
     if (elapsedMinutes >= 24 * 60) {
-      return const _Phase(
+      return _Phase(
         icon: '🔥',
-        title: 'Cetose activa',
-        body:
-            'O fígado está a produzir cetonas a partir da gordura armazenada — '
-            'a sua principal fonte de energia agora é a gordura pura.',
+        title: l.metabolicPhase4Title,
+        body: l.metabolicPhase4Body,
       );
     } else if (elapsedMinutes >= 16 * 60) {
-      return const _Phase(
+      return _Phase(
         icon: '⚡',
-        title: 'Lipólise em pleno',
-        body:
-            'O seu corpo está a quebrar activamente a gordura armazenada '
-            'em ácidos gordos para usar como energia.',
+        title: l.metabolicPhase3Title,
+        body: l.metabolicPhase3Body,
       );
     } else if (elapsedMinutes >= 12 * 60) {
-      return const _Phase(
+      return _Phase(
         icon: '✨',
-        title: 'Glicogénio a esgotar-se',
-        body:
-            'As reservas de glicogénio estão a diminuir e o corpo começa '
-            'a transitar para a queima de gordura. Continue — está quase!',
+        title: l.metabolicPhase2Title,
+        body: l.metabolicPhase2Body,
       );
     } else if (elapsedMinutes >= 10 * 60) {
-      return const _Phase(
+      return _Phase(
         icon: '💡',
-        title: 'A 2 horas de queimar gordura',
-        body:
-            'Se continuar mais 2 horas, o seu corpo inicia a transição '
-            'para usar a gordura como fonte de energia.',
+        title: l.metabolicPhase1Title,
+        body: l.metabolicPhase1Body,
       );
     }
     return null;
