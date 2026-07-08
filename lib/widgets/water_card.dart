@@ -2,18 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/app_state.dart';
 import '../theme/app_theme.dart';
+import '../l10n/app_localizations.dart';
 
-/// Cartão de água: barra de copos preenchidos + botões rápidos.
-/// Usado igualmente nos três temas do ecrã principal.
 class WaterCard extends StatelessWidget {
   const WaterCard({super.key});
-
   static const int _segments = 8;
 
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
     final colors = AppColorsScope.of(context);
+    final l = context.l10n;
     final amountMl = state.currentWaterMl;
     final goalMl = state.waterGoalMl;
     final filledSegments =
@@ -31,19 +30,14 @@ class WaterCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Água',
-                style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: colors.textPrimary),
-              ),
+              Text(l.water,
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: colors.textPrimary)),
               Text(
                 '${(amountMl / 1000).toStringAsFixed(2)} / ${(goalMl / 1000).toStringAsFixed(1)}L',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: colors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 12, color: colors.textSecondary),
               ),
             ],
           ),
@@ -69,21 +63,24 @@ class WaterCard extends StatelessWidget {
               Expanded(
                 child: OutlinedButton(
                   onPressed: () => state.addWater(250),
-                  child: const Text('+250ml', style: TextStyle(fontSize: 13)),
+                  child: Text(l.waterAdd250,
+                      style: const TextStyle(fontSize: 13)),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: OutlinedButton(
                   onPressed: () => state.addWater(500),
-                  child: const Text('+500ml', style: TextStyle(fontSize: 13)),
+                  child: Text(l.waterAdd500,
+                      style: const TextStyle(fontSize: 13)),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: OutlinedButton(
                   onPressed: () => _showCustomAmountSheet(context, state),
-                  child: const Text('+ outro', style: TextStyle(fontSize: 13)),
+                  child: Text(l.waterAddOther,
+                      style: const TextStyle(fontSize: 13)),
                 ),
               ),
             ],
@@ -94,6 +91,7 @@ class WaterCard extends StatelessWidget {
   }
 
   void _showCustomAmountSheet(BuildContext context, AppState state) {
+    final l = context.l10n;
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -108,10 +106,9 @@ class WaterCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Adicionar quantidade',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
+                Text(l.waterAddAmount,
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 16),
                 Wrap(
                   spacing: 10,
