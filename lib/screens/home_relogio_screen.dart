@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/fasting_session.dart';
 import '../services/app_state.dart';
 import '../theme/app_theme.dart';
-import '../widgets/metabolic_incentive.dart';
 import '../widgets/water_card.dart';
 import '../widgets/today_water_row.dart';
 
@@ -40,6 +40,7 @@ class _HomeRelogioScreenState extends State<HomeRelogioScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final state = context.watch<AppState>();
     final colors = AppColorsScope.of(context);
     final session = state.activeSession;
@@ -112,22 +113,17 @@ class _HomeRelogioScreenState extends State<HomeRelogioScreen> {
             child: session != null
                 ? ElevatedButton(
                     onPressed: () => state.endFasting(),
-                    child: const Text('Terminar jejum'),
+                    child: const Text(l.endFasting),
                   )
                 : ElevatedButton(
                     onPressed: () => state.startFasting(),
-                    child: const Text('Iniciar jejum'),
+                    child: const Text(l.startFasting),
                   ),
           ),
-          if (session != null)
-            MetabolicIncentive(
-              elapsedMinutes: session.elapsed.inMinutes,
-              colors: colors,
-            ),
           const SizedBox(height: 20),
           _autoScheduleToggle(context, state),
           const SizedBox(height: 12),
-          Text('Hoje',
+          Text(l.today,
               style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -160,7 +156,7 @@ class _HomeRelogioScreenState extends State<HomeRelogioScreen> {
         children: [
           Expanded(
             child: Text(
-              'Agendar ciclo automaticamente',
+              l.fastingScheduleAuto,
               style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -197,11 +193,11 @@ class _HomeRelogioScreenState extends State<HomeRelogioScreen> {
 
   List<Widget> _lastSessionRows(BuildContext context, FastingSession session) {
     return [
-      _infoRow(context, Icons.check_circle, 'Jejum iniciado',
+      _infoRow(context, Icons.check_circle, l.fastingStarted,
           DateFormat("HH:mm 'de' dd/MM").format(session.startTime)),
       if (session.endTime != null) ...[
         const SizedBox(height: 8),
-        _infoRow(context, Icons.flag_outlined, 'Fim de jejum',
+        _infoRow(context, Icons.flag_outlined, l.fastingEnded,
             DateFormat("HH:mm 'de' dd/MM").format(session.endTime!)),
       ],
     ];
@@ -250,9 +246,9 @@ class _HomeRelogioScreenState extends State<HomeRelogioScreen> {
 
   String _greeting() {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Bom dia';
-    if (hour < 19) return 'Boa tarde';
-    return 'Boa noite';
+    if (hour < 12) return l.greetingMorning;
+    if (hour < 19) return l.greetingAfternoon;
+    return l.greetingEvening;
   }
 
   String _formatRemaining(FastingSession session) {
