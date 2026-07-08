@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/fasting_session.dart';
@@ -64,6 +65,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final state = context.watch<AppState>();
     final colors = AppColorsScope.of(context);
     final history = state.history;
@@ -120,7 +122,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         onTap: () => setState(() {
                           _visibleMonth = DateTime(_today.year, _today.month);
                         }),
-                        child: Text('Hoje',
+                        child: Text(l.today,
                             style: TextStyle(
                                 fontSize: 12,
                                 color: colors.info,
@@ -201,9 +203,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
           const SizedBox(height: 10),
           Row(
             children: [
-              _legendDot(context, colors.info, 'Meta cumprida'),
+              _legendDot(context, colors.info, l.statsGoalMet),
               const SizedBox(width: 14),
-              _legendDot(context, colors.warning, 'Abaixo da meta'),
+              _legendDot(context, colors.warning, l.statsBelowGoal),
             ],
           ),
           const SizedBox(height: 16),
@@ -251,7 +253,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            isToday ? 'Hoje' : DateFormat("d 'de' MMMM", 'pt_PT').format(day),
+            isToday ? l.today : DateFormat("d 'de' MMMM", 'pt_PT').format(day),
             style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -261,8 +263,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
           if (sessionsOfDay.isEmpty)
             Text(
               isToday
-                  ? 'Ainda sem jejum registado hoje.'
-                  : 'Sem jejum registado neste dia.',
+                  ? l.fastingNoRecordedToday
+                  : l.fastingNoRecordedDay,
               style: TextStyle(fontSize: 12, color: colors.textSecondary),
             )
           else
@@ -274,12 +276,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       _detailRow(
                         context,
                         Icons.schedule,
-                        'Jejum: ${s.elapsed.inHours}h ${s.elapsed.inMinutes % 60}m',
+                        l.fastingJejumOf(s.elapsed.inHours, s.elapsed.inMinutes % 60),
                       ),
                       _detailRow(
                         context,
                         Icons.water_drop_outlined,
-                        'Água nesse ciclo: ${(s.waterMl / 1000).toStringAsFixed(1)}L de ${(goalMl / 1000).toStringAsFixed(1)}L',
+                        l.waterCycleOf((s.waterMl / 1000).toStringAsFixed(1), (goalMl / 1000).toStringAsFixed(1)),
                       ),
                     ],
                   ),
