@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../models/fasting_session.dart';
 import '../services/app_state.dart';
@@ -11,6 +12,7 @@ class StatsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final state = context.watch<AppState>();
     final colors = AppColorsScope.of(context);
     final history = state.history;
@@ -22,7 +24,7 @@ class StatsScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Estatísticas',
+          Text(l.stats,
               style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -37,7 +39,7 @@ class StatsScreen extends StatelessWidget {
               Expanded(
                 child: _statTile(
                   context,
-                  'Média jejum',
+                  l.statsAvgFasting,
                   avgMinutes == null
                       ? '--'
                       : '${avgMinutes ~/ 60}:${(avgMinutes % 60).toString().padLeft(2, '0')}',
@@ -46,7 +48,7 @@ class StatsScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          Text('Histórico recente',
+          Text(l.statsRecentHistory,
               style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -124,13 +126,13 @@ class StatsScreen extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Análises avançadas',
+                        Text(l.statsAdvanced,
                             style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
                                 color: colors.textPrimary)),
                         const SizedBox(height: 2),
-                        Text('Tendências e correlações',
+                        Text(l.statsTrends,
                             style: TextStyle(
                                 fontSize: 11,
                                 color: colors.textSecondary)),
