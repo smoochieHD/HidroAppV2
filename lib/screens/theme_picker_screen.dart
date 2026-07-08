@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../services/app_state.dart';
 import '../theme/app_theme.dart';
@@ -9,6 +10,7 @@ class ThemePickerScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final state = context.watch<AppState>();
     final colors = AppColors.forPalette(state.palette);
 
@@ -17,7 +19,7 @@ class ThemePickerScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: colors.background,
         appBar: AppBar(
-          title: const Text('Escolher tema'),
+          title: const Text(l.settingsChooseTheme),
         ),
         body: ListView(
           padding: const EdgeInsets.all(20),
@@ -66,7 +68,7 @@ class ThemePickerScreen extends StatelessWidget {
                                       fontWeight: FontWeight.w600,
                                       color: colors.textPrimary)),
                               if (theme == HomeThemeId.diario)
-                                Text('Grátis',
+                                Text(l.themeFree,
                                     style: TextStyle(
                                         fontSize: 12,
                                         color: colors.textSecondary)),
@@ -88,7 +90,7 @@ class ThemePickerScreen extends StatelessWidget {
               );
             }),
             const SizedBox(height: 20),
-            Text('Cor',
+            Text(l.settingsColor,
                 style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -142,7 +144,7 @@ class ThemePickerScreen extends StatelessWidget {
                                       fontWeight: FontWeight.w600,
                                       color: colors.textPrimary)),
                               if (paletteId == AppPaletteId.blue)
-                                Text('Grátis',
+                                Text(l.themeFree,
                                     style: TextStyle(
                                         fontSize: 12,
                                         color: colors.textSecondary)),
