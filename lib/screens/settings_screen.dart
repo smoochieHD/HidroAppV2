@@ -394,6 +394,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _showEatingWindowPicker(BuildContext context, AppState state) {
+    final l = context.l10n;
     _showCustomDurationPicker(
       context,
       state,
@@ -415,6 +416,7 @@ class SettingsScreen extends StatelessWidget {
   }) {
     int selectedHours = initialMinutes ~/ 60;
     int selectedMinutes = initialMinutes % 60;
+    final l = context.l10n;
     final colors = AppColorsScope.of(context);
 
     showModalBottomSheet(
