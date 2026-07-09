@@ -55,7 +55,7 @@ class _HomeLinhaDoTempoScreenState extends State<HomeLinhaDoTempoScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                _greeting(),
+                _greeting(context),
                 style: TextStyle(
                   fontSize: 13,
                   color: colors.textSecondary,
@@ -148,6 +148,7 @@ class _HomeLinhaDoTempoScreenState extends State<HomeLinhaDoTempoScreen> {
   }
 
   Widget _autoScheduleToggle(BuildContext context, AppState state) {
+    final l = context.l10n;
     final colors = AppColorsScope.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -195,6 +196,7 @@ class _HomeLinhaDoTempoScreenState extends State<HomeLinhaDoTempoScreen> {
   }
 
   List<Widget> _lastSessionRows(BuildContext context, FastingSession session) {
+    final l = context.l10n;
     return [
       _infoRow(context, Icons.check_circle, l.fastingStarted,
           DateFormat("HH:mm 'de' dd/MM").format(session.startTime)),
@@ -247,7 +249,8 @@ class _HomeLinhaDoTempoScreenState extends State<HomeLinhaDoTempoScreen> {
     );
   }
 
-  String _greeting() {
+  String _greeting(BuildContext context) {
+    final l = context.l10n;
     final hour = DateTime.now().hour;
     if (hour < 12) return l.greetingMorning;
     if (hour < 19) return l.greetingAfternoon;
