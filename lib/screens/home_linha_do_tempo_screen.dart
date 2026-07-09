@@ -116,11 +116,11 @@ class _HomeLinhaDoTempoScreenState extends State<HomeLinhaDoTempoScreen> {
             child: session != null
                 ? ElevatedButton(
                     onPressed: () => state.endFasting(),
-                    child: const Text(l.endFasting),
+                    child: Text(l.endFasting),
                   )
                 : ElevatedButton(
                     onPressed: () => state.startFasting(),
-                    child: const Text(l.startFasting),
+                    child: Text(l.startFasting),
                   ),
           ),
           const SizedBox(height: 20),
