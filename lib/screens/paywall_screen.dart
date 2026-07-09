@@ -78,7 +78,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                       await state.setPremiumStatus(true);
                       if (context.mounted) Navigator.of(context).pop();
                     },
-                    child: const Text(l.continueAction),
+                    child: Text(l.continueAction),
                   ),
                 ),
                 const SizedBox(height: 8),
