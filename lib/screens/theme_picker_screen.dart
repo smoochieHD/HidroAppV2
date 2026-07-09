@@ -19,7 +19,7 @@ class ThemePickerScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: colors.background,
         appBar: AppBar(
-          title: const Text(l.settingsChooseTheme),
+          title: Text(l.settingsChooseTheme),
         ),
         body: ListView(
           padding: const EdgeInsets.all(20),
