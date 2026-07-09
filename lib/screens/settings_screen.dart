@@ -324,6 +324,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _showProtocolPicker(BuildContext context, AppState state) {
+    final l = context.l10n;
     final colors = AppColorsScope.of(context);
     showModalBottomSheet(
       context: context,
@@ -478,7 +479,7 @@ class SettingsScreen extends StatelessWidget {
                                 onConfirm(selectedHours * 60 + selectedMinutes);
                                 Navigator.of(ctx).pop();
                               },
-                        child: const Text(l.confirm),
+                        child: Text(l.confirm),
                       ),
                     ),
                   ],
@@ -521,6 +522,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _showWaterGoalPicker(BuildContext context, AppState state) {
+    final l = context.l10n;
     final colors = AppColorsScope.of(context);
     showModalBottomSheet(
       context: context,
