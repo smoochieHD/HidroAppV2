@@ -237,7 +237,7 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
             width: double.infinity,
             child: OutlinedButton(
               onPressed: () => _confirmEndFasting(context),
-              child: const Text(l.endFastingNow),
+              child: Text(l.endFastingNow),
             ),
           ),
         ],
@@ -282,7 +282,7 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () => state.startFasting(),
-                child: const Text(l.fastingStartNow),
+                child: Text(l.fastingStartNow),
               ),
             ),
           ],
@@ -317,7 +317,7 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () => state.startFasting(),
-              child: const Text(l.startFasting),
+              child: Text(l.startFasting),
             ),
           ),
         ],
@@ -330,12 +330,12 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text(l.endFastingQuestion),
-        content: const Text(l.endFastingConfirm),
+        title: Text(l.endFastingQuestion),
+        content: Text(l.endFastingConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text(l.cancel),
+            child: Text(l.cancel),
           ),
           TextButton(
             onPressed: () {
