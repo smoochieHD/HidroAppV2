@@ -18,7 +18,7 @@ class ProfilesScreen extends StatelessWidget {
       colors: colors,
       child: Scaffold(
         backgroundColor: colors.background,
-        appBar: AppBar(title: const Text(l.profilesFasting)),
+        appBar: AppBar(title: Text(l.profilesFasting)),
         body: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -54,7 +54,7 @@ class ProfilesScreen extends StatelessWidget {
                     ),
                     TextButton(
                       onPressed: () => _showSaveDialog(context, state),
-                      child: const Text(l.profilesSave),
+                      child: Text(l.profilesSave),
                     ),
                   ],
                 ),
@@ -68,8 +68,7 @@ class ProfilesScreen extends StatelessWidget {
               const SizedBox(height: 10),
               if (state.profiles.isEmpty)
                 Text(
-                  'Ainda não guardaste nenhum perfil. Ajusta as definições '
-                  'que quiseres e toca em "Guardar como perfil".',
+                  l.profilesNoSaved,
                   style: TextStyle(fontSize: 12, color: colors.textSecondary),
                 )
               else
@@ -115,7 +114,7 @@ class ProfilesScreen extends StatelessWidget {
                             if (!isActive)
                               TextButton(
                                 onPressed: () => state.applyProfile(profile.id),
-                                child: const Text(l.use),
+                                child: Text(l.use),
                               )
                             else
                               Padding(
@@ -144,22 +143,23 @@ class ProfilesScreen extends StatelessWidget {
   }
 
   void _showSaveDialog(BuildContext context, AppState state) {
+    final l = context.l10n;
     final controller = TextEditingController();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text(l.profilesSaveAction),
+        title: Text(l.profilesSaveAction),
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: l.profilesExampleName,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text(l.cancel),
+            child: Text(l.cancel),
           ),
           TextButton(
             onPressed: () {
@@ -168,7 +168,7 @@ class ProfilesScreen extends StatelessWidget {
               state.saveCurrentAsProfile(name);
               Navigator.of(ctx).pop();
             },
-            child: const Text(l.save),
+            child: Text(l.save),
           ),
         ],
       ),
@@ -176,22 +176,23 @@ class ProfilesScreen extends StatelessWidget {
   }
 
   void _confirmDelete(BuildContext context, AppState state, String profileId) {
+    final l = context.l10n;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text(l.profilesRemove),
-        content: const Text(l.actionIrreversible),
+        title: Text(l.profilesRemove),
+        content: Text(l.actionIrreversible),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text(l.cancel),
+            child: Text(l.cancel),
           ),
           TextButton(
             onPressed: () {
               state.deleteProfile(profileId);
               Navigator.of(ctx).pop();
             },
-            child: const Text(l.remove),
+            child: Text(l.remove),
           ),
         ],
       ),
