@@ -57,7 +57,7 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                _greeting(),
+                _greeting(context),
                 style: TextStyle(
                   fontSize: 13,
                   color: colors.textSecondary,
@@ -145,6 +145,7 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
   }
 
   Widget _autoScheduleToggle(BuildContext context, AppState state) {
+    final l = context.l10n;
     final colors = AppColorsScope.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -172,7 +173,8 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
     );
   }
 
-  String _greeting() {
+  String _greeting(BuildContext context) {
+    final l = context.l10n;
     final hour = DateTime.now().hour;
     if (hour < 12) return l.greetingMorning;
     if (hour < 19) return l.greetingAfternoon;
@@ -191,6 +193,7 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
   }
 
   Widget _activeFastingCard(BuildContext context, FastingSession session) {
+    final l = context.l10n;
     final colors = AppColorsScope.of(context);
     final isOver = session.goalReached;
     final rounded = session.remainingRounded;
@@ -246,6 +249,7 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
   }
 
   Widget _startFastingCard(BuildContext context, AppState state) {
+    final l = context.l10n;
     final colors = AppColorsScope.of(context);
     final scheduled = state.scheduledNextFastTime;
 
@@ -326,6 +330,7 @@ class _HomeDiarioScreenState extends State<HomeDiarioScreen> {
   }
 
   void _confirmEndFasting(BuildContext context) {
+    final l = context.l10n;
     final state = context.read<AppState>();
     showDialog(
       context: context,
