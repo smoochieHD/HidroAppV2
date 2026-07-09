@@ -54,7 +54,7 @@ class _HomeRelogioScreenState extends State<HomeRelogioScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                _greeting(),
+                _greeting(context),
                 style: TextStyle(
                   fontSize: 13,
                   color: colors.textSecondary,
@@ -145,6 +145,7 @@ class _HomeRelogioScreenState extends State<HomeRelogioScreen> {
   }
 
   Widget _autoScheduleToggle(BuildContext context, AppState state) {
+    final l = context.l10n;
     final colors = AppColorsScope.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -244,7 +245,8 @@ class _HomeRelogioScreenState extends State<HomeRelogioScreen> {
     );
   }
 
-  String _greeting() {
+  String _greeting(BuildContext context) {
+    final l = context.l10n;
     final hour = DateTime.now().hour;
     if (hour < 12) return l.greetingMorning;
     if (hour < 19) return l.greetingAfternoon;
