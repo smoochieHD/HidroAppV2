@@ -235,6 +235,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   /// quando ainda não houve nenhuma seleção manual.
   Widget _selectedDayDetails(
       BuildContext context, List<FastingSession> history) {
+    final l = context.l10n;
     final colors = AppColorsScope.of(context);
     final day = _selectedDay ?? _today;
     final sessionsOfDay =
@@ -290,7 +291,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             _detailRow(
               context,
               Icons.water_drop_outlined,
-              'Água: ${(state.currentWaterMl / 1000).toStringAsFixed(1)}L de ${(goalMl / 1000).toStringAsFixed(1)}L',
+              l.waterCurrentOf((state.currentWaterMl / 1000).toStringAsFixed(1), (goalMl / 1000).toStringAsFixed(1)),
             ),
         ],
       ),
