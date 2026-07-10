@@ -25,7 +25,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
     return AppColorsScope(
       colors: colors,
-      child: Scaffold(
+      child: Builder(builder: (context) => Scaffold(
         backgroundColor: colors.background,
         body: SafeArea(
           child: Padding(
@@ -49,7 +49,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     style:
                         TextStyle(fontSize: 13, color: colors.textSecondary)),
                 const SizedBox(height: 20),
-                _benefitRow(context, 'Temas Relógio e Linha do tempo'),
+                _benefitRow(context, l.themeRelogioLinha),
                 _benefitRow(context, l.premiumPalettes),
                 _benefitRow(context, l.statsAdvancedTitle),
                 _benefitRow(context, l.premiumSupport),
@@ -88,8 +88,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
               ],
             ),
           ),
-        ),
-      ),
+        )),
     );
   }
 
