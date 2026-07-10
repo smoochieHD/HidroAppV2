@@ -25,6 +25,10 @@ class NotificationService {
   factory NotificationService() => _instance;
   NotificationService._();
 
+  String _languageCode = 'pt';
+  bool get _isEn => _languageCode == 'en';
+  void setLanguage(String code) { _languageCode = code; }
+
   final _plugin = FlutterLocalNotificationsPlugin();
   bool _initialized = false;
 
@@ -46,26 +50,26 @@ class NotificationService {
     await android?.requestNotificationsPermission();
     await android?.createNotificationChannel(const AndroidNotificationChannel(
       'fast_end_channel',
-      'Fim de jejum',
-      description: 'Avisa quando o jejum atual termina.',
+      (_isEn ? 'Fast ended' : 'Fim de jejum'),
+      description: (_isEn ? 'Notifies when your current fast ends.' : 'Avisa quando o jejum atual termina.'),
       importance: Importance.high,
     ));
     await android?.createNotificationChannel(const AndroidNotificationChannel(
       'fast_start_channel',
-      'Início de jejum',
-      description: 'Avisa quando um jejum agendado começa.',
+      (_isEn ? 'Fast started' : 'Início de jejum'),
+      description: (_isEn ? 'Notifies when a scheduled fast begins.' : 'Avisa quando um jejum agendado começa.'),
       importance: Importance.high,
     ));
     await android?.createNotificationChannel(const AndroidNotificationChannel(
       'weekly_report_channel',
-      'Relatório semanal',
-      description: 'Resumo semanal de progresso.',
+      (_isEn ? 'Weekly report' : 'Relatório semanal'),
+      description: (_isEn ? 'Weekly progress summary.' : 'Resumo semanal de progresso.'),
       importance: Importance.defaultImportance,
     ));
     await android?.createNotificationChannel(const AndroidNotificationChannel(
       'water_reminder_channel',
-      'Lembretes de água',
-      description: 'Lembra de beber água durante o dia.',
+      (_isEn ? 'Water reminders' : 'Lembretes de água'),
+      description: (_isEn ? 'Reminds you to drink water during the day.' : 'Lembra de beber água durante o dia.'),
       importance: Importance.defaultImportance,
     ));
   }
@@ -100,14 +104,14 @@ class NotificationService {
     const androidDetails = AndroidNotificationDetails(
       'fast_end_channel',
       'Fim de jejum',
-      channelDescription: 'Avisa quando o jejum atual termina.',
+      channelDescription: (_isEn ? 'Notifies when your current fast ends.' : 'Avisa quando o jejum atual termina.'),
       importance: Importance.high,
       priority: Priority.high,
     );
     await _plugin.show(
       fastEndNotificationId,
-      'O seu jejum terminou',
-      'Abra a app para ver o resumo.',
+      (_isEn ? 'Your fast has ended' : 'O seu jejum terminou'),
+      (_isEn ? 'Open the app to see your summary.' : 'Abra a app para ver o resumo.'),
       const NotificationDetails(android: androidDetails),
     );
   }
@@ -119,12 +123,12 @@ class NotificationService {
     await _plugin.show(
       9999,
       'Jejum iniciado',
-      'O seu jejum está a contar. Boa sorte!',
+      (_isEn ? 'Your fast is running. Good luck!' : 'O seu jejum está a contar. Boa sorte!'),
       const NotificationDetails(
         android: AndroidNotificationDetails(
           'fast_end_channel',
           'Fim de jejum',
-          channelDescription: 'Avisa quando o jejum atual termina.',
+          channelDescription: (_isEn ? 'Notifies when your current fast ends.' : 'Avisa quando o jejum atual termina.'),
           importance: Importance.high,
           priority: Priority.high,
         ),
@@ -158,8 +162,8 @@ class NotificationService {
 
     await _plugin.zonedSchedule(
       fastStartNotificationId,
-      'O seu jejum começou',
-      'A janela de alimentação terminou. Bom jejum!',
+      (_isEn ? 'Your fast has begun' : 'O seu jejum começou'),
+      (_isEn ? 'The eating window has ended. Happy fasting!' : 'A janela de alimentação terminou. Bom jejum!'),
       scheduledDate,
       const NotificationDetails(android: androidDetails),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
@@ -189,8 +193,8 @@ class NotificationService {
 
     const androidDetails = AndroidNotificationDetails(
       'weekly_report_channel',
-      'Relatório semanal',
-      channelDescription: 'Resumo semanal de progresso.',
+      (_isEn ? 'Weekly report' : 'Relatório semanal'),
+      channelDescription: (_isEn ? 'Weekly progress summary.' : 'Resumo semanal de progresso.'),
       importance: Importance.defaultImportance,
       priority: Priority.defaultPriority,
     );
@@ -198,7 +202,7 @@ class NotificationService {
     await _plugin.zonedSchedule(
       weeklyReportNotificationId,
       'O teu resumo da semana',
-      'Cumpriste $weeklyCount de $weeklyTotal dias. Sequência recorde: '
+      (_isEn ? 'You completed $weeklyCount of $weeklyTotal days. Record streak: ' : 'Cumpriste $weeklyCount de $weeklyTotal dias. Sequência recorde: ')
           '$bestStreak dias.',
       scheduled,
       const NotificationDetails(android: androidDetails),
@@ -231,8 +235,8 @@ class NotificationService {
 
     const androidDetails = AndroidNotificationDetails(
       'water_reminder_channel',
-      'Lembretes de água',
-      channelDescription: 'Lembra de beber água durante o dia.',
+      (_isEn ? 'Water reminders' : 'Lembretes de água'),
+      channelDescription: (_isEn ? 'Reminds you to drink water during the day.' : 'Lembra de beber água durante o dia.'),
       importance: Importance.defaultImportance,
       priority: Priority.defaultPriority,
     );
@@ -248,8 +252,8 @@ class NotificationService {
 
       await _plugin.zonedSchedule(
         waterReminderBaseId + i,
-        'Hora de beber água',
-        'Mantém a hidratação durante o dia.',
+        (_isEn ? 'Time to drink water' : 'Hora de beber água'),
+        (_isEn ? 'Stay hydrated throughout the day.' : 'Mantém a hidratação durante o dia.'),
         scheduled,
         const NotificationDetails(android: androidDetails),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
