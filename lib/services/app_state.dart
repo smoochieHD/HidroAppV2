@@ -76,6 +76,7 @@ class AppState extends ChangeNotifier {
     // notificações (e o pedido de permissões ao sistema) corre em
     // paralelo, para o primeiro ecrã aparecer imediatamente.
     unawaited(state._notifications.init());
+    state._notifications.setLanguage(state.languageCode);
     if (state.weeklyReportEnabled) {
       unawaited(state._scheduleWeeklyReportNotification());
     }
@@ -305,6 +306,7 @@ class AppState extends ChangeNotifier {
 
   Future<void> setLanguageCode(String code) async {
     languageCode = code;
+    _notifications.setLanguage(code);
     await storage.saveLanguageCode(code);
     notifyListeners();
   }
