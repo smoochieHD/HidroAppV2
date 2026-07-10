@@ -105,7 +105,7 @@ class _HomeLinhaDoTempoScreenState extends State<HomeLinhaDoTempoScreen> {
               ),
               if (session != null)
                 Text(
-                  'Meta · ${formatDurationMinutes(session.goalDuration.inMinutes)}',
+                  l.fastingGoal(formatDurationMinutes(session.goalDuration.inMinutes)),
                   style: TextStyle(fontSize: 11, color: colors.textSecondary),
                 ),
             ],
@@ -181,7 +181,7 @@ class _HomeLinhaDoTempoScreenState extends State<HomeLinhaDoTempoScreen> {
     return _infoRow(
       context,
       Icons.water_drop_outlined,
-      '${(session.waterMl / 250).round()} copos de água (resumo)',
+      l.waterCupsSummary((session.waterMl / 250).round()),
       '${session.waterMl}ml de ${state.waterGoalMl}ml neste ciclo',
     );
   }
