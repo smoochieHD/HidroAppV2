@@ -33,7 +33,7 @@ class StatsScreen extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _statTile(context, 'Sequência atual', '$streak dias'),
+                child: _statTile(context, l.statsCurrentStreak, l.statsStreak(streak)),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -56,7 +56,7 @@ class StatsScreen extends StatelessWidget {
           const SizedBox(height: 10),
           if (history.isEmpty)
             Text(
-              'Ainda não tens jejuns terminados. Conclui o teu primeiro jejum para veres dados aqui.',
+              l.fastingNoCompleted,
               style: TextStyle(fontSize: 13, color: colors.textSecondary),
             )
           else
