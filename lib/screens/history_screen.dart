@@ -107,7 +107,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               Row(
                 children: [
                   Text(
-                    DateFormat.yMMMM('pt_PT').format(_visibleMonth),
+                    DateFormat.yMMMM(context.read<AppState>().languageCode == 'en' ? 'en_US' : 'pt_PT').format(_visibleMonth),
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -254,7 +254,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            isToday ? l.today : DateFormat("d 'de' MMMM", 'pt_PT').format(day),
+            isToday ? l.today : (context.read<AppState>().languageCode == 'en' ? DateFormat('MMMMd', 'en_US').format(day) : DateFormat("d 'de' MMMM", 'pt_PT').format(day)),
             style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
