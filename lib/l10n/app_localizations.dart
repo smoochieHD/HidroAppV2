@@ -185,6 +185,7 @@ class AppLocalizations {
   String get statsAvgFasting => _isPt ? 'Média jejum' : 'Avg fast';
   String get statsGoalMet => _isPt ? 'Meta cumprida' : 'Goal met';
   String statsStreak(int days) => '$days ${_isPt ? 'dias' : 'days'}';
+  String get statsCurrentStreak => _isPt ? 'Sequência atual' : 'Current streak';
   String statsConsistency(int weeks) =>
       _isPt ? 'Consistência · últimas $weeks semanas' : 'Consistency · last $weeks weeks';
   String get statsNoPattern =>
