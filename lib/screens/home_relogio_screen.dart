@@ -178,7 +178,7 @@ class _HomeRelogioScreenState extends State<HomeRelogioScreen> {
     return _infoRow(
       context,
       Icons.water_drop_outlined,
-      '${(session.waterMl / 250).round()} copos de água (resumo)',
+      l.waterCupsSummary((session.waterMl / 250).round()),
       '${session.waterMl}ml de ${state.waterGoalMl}ml neste ciclo',
     );
   }
