@@ -193,6 +193,7 @@ class _HomeRelogioScreenState extends State<HomeRelogioScreen> {
   }
 
   List<Widget> _lastSessionRows(BuildContext context, FastingSession session) {
+    final l = context.l10n;
     return [
       _infoRow(context, Icons.check_circle, l.fastingStarted,
           DateFormat("HH:mm 'de' dd/MM").format(session.startTime)),
